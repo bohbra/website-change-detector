@@ -26,4 +26,9 @@ jobs:
     - name: Build
       run: dotnet build -c Release --no-restore 
     - name: Publish
-      run: dotnet publish -c Release -o app 
+      run: dotnet publish -c Release -o publish
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: WebsiteChangeDetector
+        path: publish
