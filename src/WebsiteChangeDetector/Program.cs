@@ -1,6 +1,7 @@
 ﻿using OpenQA.Selenium.Chrome;
 using System;
 using System.Threading.Tasks;
+using OpenQA.Selenium;
 
 namespace WebsiteChangeDetector
 {
@@ -9,6 +10,10 @@ namespace WebsiteChangeDetector
         static async Task Main()
         {
             var chromeOptions = new ChromeOptions();
+            chromeOptions.AddArgument("--window-size=1024,768");
+            chromeOptions.AddArgument("--disable-logging");
+            chromeOptions.AddArgument("--log-level=3");
+
             var settings = Configuration.GetAppSettings();
             if (settings.Headless)
             {
