@@ -1,42 +1,41 @@
 ﻿using OpenQA.Selenium;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
+using WebsiteChangeDetector.Websites;
 
 namespace WebsiteChangeDetector
 {
     public class Detector
     {
-        private readonly IWebDriver _webDriver;
         private readonly AppSettings _settings;
+        private readonly List<IWebsite> _websites = new();
 
         public Detector(IWebDriver webDriver, AppSettings settings)
         {
-            _webDriver = webDriver;
             _settings = settings;
 
             // setup twilio client
             TwilioClient.Init(_settings.TwilioAccountSid, _settings.TwilioAuthToken);
+
+            // setup websites
+            _websites.Add(new Petco(webDriver, settings));
+            _websites.Add(new Sharp(webDriver, settings));
         }
 
         public async Task Scan()
         {
-            _webDriver
-                .Navigate()
-                .GoToUrl(_settings.Url);
-
-            // sleep after load
-            await Task.Delay(TimeSpan.FromSeconds(_settings.PageLoadDelayInSeconds));
-
-            var found = !_webDriver.PageSource.Contains("Sorry, we couldn't find any open appointments");
-            Console.WriteLine($"{DateTime.Now}: Appointment search result: {found}");
-
-            if (found)
+            // check all websites
+            foreach (var website in _websites)
             {
+                var found = await website.Check();
+                if (!found) 
+                    continue;
                 SendText();
-                throw new Exception("Stop running, found appointment");
+                throw new Exception("Stop running, found match");
             }
         }
 
