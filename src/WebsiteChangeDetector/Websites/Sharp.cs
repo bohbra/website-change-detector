@@ -55,12 +55,20 @@ namespace WebsiteChangeDetector.Websites
                 // click through pages
                 if (found)
                 {
-                    //_webDriver.FindElements(By.CssSelector(".section-more-info.button.storm.full-width.text-center"))[1].Click();
-                    _webDriver.FindElement(By.CssSelector(".section-more-info.button.storm.full-width.text-center")).Click();
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
-                    _webDriver.FindElement(By.Id("add-to-cart")).Click();
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
-                    _webDriver.Navigate().GoToUrl("https://www.sharp.com/cart/checkout/");
+                    try
+                    {
+                        //_webDriver.FindElements(By.CssSelector(".section-more-info.button.storm.full-width.text-center"))[1].Click();
+                        _webDriver.FindElement(By.CssSelector(".section-more-info.button.storm.full-width.text-center")).Click();
+                        await Task.Delay(TimeSpan.FromMilliseconds(500));
+                        _webDriver.FindElement(By.Id("add-to-cart")).Click();
+                        await Task.Delay(TimeSpan.FromMilliseconds(500));
+                        _webDriver.Navigate().GoToUrl("https://www.sharp.com/cart/checkout/");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                    
                     return true;
                 }
             }
