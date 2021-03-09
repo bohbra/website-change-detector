@@ -18,7 +18,7 @@ namespace WebsiteChangeDetector.Websites
             _settings = settings;
         }
 
-        public async Task<bool> Check()
+        public async Task<WebsiteResult> Check()
         {
             // navigate to page
             _webDriver.Navigate().GoToUrl(Url);
@@ -33,7 +33,7 @@ namespace WebsiteChangeDetector.Websites
             Console.WriteLine($"{DateTime.Now}: Petco search result: {found}");
 
             // result
-            return found;
+            return new WebsiteResult(found);
         }
     }
 }

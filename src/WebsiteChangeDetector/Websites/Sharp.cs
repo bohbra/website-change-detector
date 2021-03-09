@@ -1,6 +1,7 @@
 ﻿using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace WebsiteChangeDetector.Websites
@@ -25,7 +26,7 @@ namespace WebsiteChangeDetector.Websites
             //_urls.Add("https://www.sharp.com/health-classes/vaccinator-registration-sharp--county-of-san-diego-covid-19-vaccination-clinic-2555");
         }
 
-        public async Task<bool> Check()
+        public async Task<WebsiteResult> Check()
         {
             // login first if needed
             if (_loginNeeded)
@@ -62,28 +63,28 @@ namespace WebsiteChangeDetector.Websites
                 // log result
                 Console.WriteLine($"{DateTime.Now}: Sharp search result: {found} [{url}]");
 
+                if (!found) 
+                    continue;
+
                 // click through pages
-                if (found)
+                try
                 {
-                    try
-                    {
-                        //_webDriver.FindElements(By.CssSelector(".section-more-info.button.storm.full-width.text-center"))[1].Click();
-                        _webDriver.FindElement(By.CssSelector(".section-more-info.button.storm.full-width.text-center")).Click();
-                        await Task.Delay(TimeSpan.FromMilliseconds(500));
-                        _webDriver.FindElement(By.Id("add-to-cart")).Click();
-                        await Task.Delay(TimeSpan.FromMilliseconds(500));
-                        _webDriver.Navigate().GoToUrl("https://www.sharp.com/cart/checkout/");
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                    
-                    return true;
+                    //_webDriver.FindElements(By.CssSelector(".section-more-info.button.storm.full-width.text-center"))[1].Click();
+                    _webDriver.FindElement(By.CssSelector(".section-more-info.button.storm.full-width.text-center")).Click();
+                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    _webDriver.FindElement(By.Id("add-to-cart")).Click();
+                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    _webDriver.Navigate().GoToUrl("https://www.sharp.com/cart/checkout/");
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+                    
+                return new WebsiteResult(true, $"Found at {url.Split('/').Last()}");
             }
 
-            return false;
+            return new WebsiteResult(false);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace WebsiteChangeDetector
             TwilioClient.Init(_settings.TwilioAccountSid, _settings.TwilioAuthToken);
 
             // setup websites
-            _websites.Add(new Petco(webDriver, settings));
+            //_websites.Add(new Petco(webDriver, settings));
             _websites.Add(new Sharp(webDriver, settings));
         }
 
@@ -31,18 +31,19 @@ namespace WebsiteChangeDetector
             // check all websites
             foreach (var website in _websites)
             {
-                var found = await website.Check();
-                if (!found) 
+                var result = await website.Check();
+                if (!result.Success) 
                     continue;
-                SendText();
-                throw new Exception("Stop running, found match");
+                SendText(result.Message);
+                Console.WriteLine("Pausing");
+                await Task.Delay(TimeSpan.FromHours(4));
             }
         }
 
-        private void SendText()
+        private void SendText(string message)
         {
             MessageResource.Create(
-                body: "New appointment found!",
+                body: message,
                 from: new PhoneNumber(_settings.TwilioFromPhoneNumber),
                 to: new PhoneNumber(_settings.TwilioToPhoneNumber)
             );
