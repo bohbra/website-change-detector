@@ -34,5 +34,7 @@ namespace WebsiteChangeDetector
         public string TwilioAuthToken { get; set; }
         public string TwilioFromPhoneNumber { get; set; }
         public string TwilioToPhoneNumber { get; set; }
+        public string SharpEmail { get; set; }
+        public string SharpPassword { get; set; }
     }
 }

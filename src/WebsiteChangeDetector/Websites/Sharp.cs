@@ -21,7 +21,6 @@ namespace WebsiteChangeDetector.Websites
             _settings = settings;
             _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-grossmont-center-covid-19-vaccine-clinic-2558");
             _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-chula-vista-center-covid-19-vaccine-clinic-2554");
-            _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-csu-san-marcos-covid-19-vaccine-clinic-2578");
             _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-sharp-metro-campus-covid-19-vaccine-clinic-2564");
             //_urls.Add("https://www.sharp.com/health-classes/vaccinator-registration-sharp--county-of-san-diego-covid-19-vaccination-clinic-2555");
         }
@@ -33,7 +32,18 @@ namespace WebsiteChangeDetector.Websites
             {
                 Console.WriteLine($"{DateTime.Now}: Login first");
                 _webDriver.Navigate().GoToUrl("https://account.sharp.com");
-                await Task.Delay(TimeSpan.FromSeconds(10));
+
+                // enter email
+                var emailInput = _webDriver.FindElement(By.Id("email"));
+                emailInput.SendKeys(_settings.SharpEmail);
+                _webDriver.FindElement(By.Id("pre-login-submit-btn")).Click();
+
+                // enter password
+                var passwordInput = _webDriver.FindElement(By.Id("password"));
+                passwordInput.SendKeys(_settings.SharpPassword);
+                _webDriver.FindElement(By.Id("btn-sign-in")).Click();
+
+                await Task.Delay(TimeSpan.FromSeconds(3));
                 _loginNeeded = false;
             }
 
