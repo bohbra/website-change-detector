@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OpenQA.Selenium.Support.UI;
 
 namespace WebsiteChangeDetector.Websites
 {
@@ -75,6 +76,17 @@ namespace WebsiteChangeDetector.Websites
                     _webDriver.FindElement(By.Id("add-to-cart")).Click();
                     await Task.Delay(TimeSpan.FromMilliseconds(500));
                     _webDriver.Navigate().GoToUrl("https://www.sharp.com/cart/checkout/");
+
+                    // fill in custom fields
+                    var jobTitle = _webDriver.FindElement(By.Id("customField_39_47389_1"));
+                    jobTitle.SendKeys("Sales");
+
+                    var departmentName = _webDriver.FindElement(By.Id("customField_40_47389_1"));
+                    departmentName.SendKeys("None");
+
+                    var entityName = _webDriver.FindElement(By.Name("customField_41_47389_1"));
+                    var selectElement = new SelectElement(entityName);
+                    selectElement.SelectByText("N/A (Not a Sharp Employee)");
                 }
                 catch (Exception e)
                 {
