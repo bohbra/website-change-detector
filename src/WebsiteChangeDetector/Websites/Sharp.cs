@@ -81,7 +81,7 @@ namespace WebsiteChangeDetector.Websites
                     Console.WriteLine(e);
                 }
                     
-                return new WebsiteResult(true, $"Found at {url.Split('/').Last()}");
+                return new WebsiteResult(true, $"Found at {url.Split("/volunteer-registration-").Last()}");
             }
 
             return new WebsiteResult(false);
