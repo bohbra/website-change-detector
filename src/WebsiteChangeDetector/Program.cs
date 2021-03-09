@@ -1,7 +1,6 @@
 ﻿using OpenQA.Selenium.Chrome;
 using System;
 using System.Threading.Tasks;
-using OpenQA.Selenium;
 
 namespace WebsiteChangeDetector
 {
@@ -27,17 +26,13 @@ namespace WebsiteChangeDetector
                 while (true)
                 {
                     await detector.Scan();
+                    Console.WriteLine($"{DateTime.Now}: Pausing for {settings.PollDelayInSeconds} seconds");
                     await Task.Delay(TimeSpan.FromSeconds(settings.PollDelayInSeconds));
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception occurred. Message: {ex.Message}. Stack trace: {ex.StackTrace}");
-            }
-            finally
-            {
-                Console.WriteLine("Closing driver");
-                driver.Close();
             }
         }
     }
