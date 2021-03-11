@@ -13,17 +13,18 @@ namespace WebsiteChangeDetector.Websites
         private readonly AppSettings _settings;
         private readonly List<string> _urls = new();
 
-        private const string SearchText = "More info";
-
         private bool _loginNeeded = true;
 
         public Sharp(IWebDriver webDriver, AppSettings settings)
         {
             _webDriver = webDriver;
             _settings = settings;
+
             _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-grossmont-center-covid-19-vaccine-clinic-2558");
             _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-chula-vista-center-covid-19-vaccine-clinic-2554");
             _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-sharp-metro-campus-covid-19-vaccine-clinic-2564");
+
+            // Testing
             //_urls.Add("https://www.sharp.com/health-classes/vaccinator-registration-sharp--county-of-san-diego-covid-19-vaccination-clinic-2555");
         }
 
@@ -58,20 +59,24 @@ namespace WebsiteChangeDetector.Websites
                 // sleep after load
                 await Task.Delay(TimeSpan.FromSeconds(_settings.PageLoadDelayInSeconds));
 
-                // search for text
-                var found = _webDriver.PageSource.Contains(SearchText);
-
-                // log result
-                Console.WriteLine($"{DateTime.Now}: Sharp search result: {found} [{url}]");
-
-                if (!found) 
-                    continue;
-
                 // click through pages
                 try
                 {
-                    //_webDriver.FindElements(By.CssSelector(".section-more-info.button.storm.full-width.text-center"))[1].Click();
-                    _webDriver.FindElement(By.CssSelector(".section-more-info.button.storm.full-width.text-center")).Click();
+                    var allDates = _webDriver.FindElements(By.CssSelector(".section-date.row"));
+                    var searchDates = allDates.Where(x => x.Text.Contains("Saturday") || x.Text.Contains("Sunday")).ToList();
+                    var availableDates = searchDates.Where(x => x.Text.Contains("More info")).ToList();
+                    if (availableDates.Any())
+                    {
+                        Console.WriteLine($"{DateTime.Now}: Sharp search result: True [{url}]");
+                        var firstDate = availableDates.First();
+                        firstDate.FindElement(By.CssSelector(".section-more-info.button.storm.full-width.text-center")).Click();
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{DateTime.Now}: Sharp search result: False [{url}]");
+                        continue;
+                    }
+
                     await Task.Delay(TimeSpan.FromMilliseconds(500));
                     _webDriver.FindElement(By.Id("add-to-cart")).Click();
                     await Task.Delay(TimeSpan.FromMilliseconds(500));
