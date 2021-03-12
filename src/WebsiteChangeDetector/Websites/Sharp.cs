@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 
 namespace WebsiteChangeDetector.Websites
@@ -63,12 +64,24 @@ namespace WebsiteChangeDetector.Websites
                 try
                 {
                     var allDates = _webDriver.FindElements(By.CssSelector(".section-date.row"));
-                    var searchDates = allDates.Where(x => x.Text.Contains("Saturday") || x.Text.Contains("Sunday")).ToList();
-                    var availableDates = searchDates.Where(x => x.Text.Contains("More info")).ToList();
+                    var availableDates = allDates.Where(x => x.Text.Contains("More info")).ToList();
+
                     if (availableDates.Any())
+                        Console.WriteLine($"{DateTime.Now}: Some dates found! Total is {availableDates.Count} for {url}");
+
+                    var searchDatesExcluded = availableDates.Where(x => !x.Text.Contains("March 23")).ToList();
+                    //var searchDates =  searchDatesExcluded.Where(x => 
+                    //    x.Text.Contains("am to") || (x.Text.Contains("Saturday") || x.Text.Contains("Sunday"))).ToList();
+                    var searchDates = searchDatesExcluded.Where(x =>
+                       (!x.Text.Contains("am to") && x.Text.Contains("March 16")) ||
+                       (!x.Text.Contains("am to") && x.Text.Contains("March 17")) ||
+                       (!x.Text.Contains("am to") && x.Text.Contains("March 18")) ||
+                       (x.Text.Contains("March 20") || x.Text.Contains("March 21"))).ToList();
+
+                    if (searchDates.Any())
                     {
                         Console.WriteLine($"{DateTime.Now}: Sharp search result: True [{url}]");
-                        var firstDate = availableDates.First();
+                        var firstDate = searchDates.First();
                         firstDate.FindElement(By.CssSelector(".section-more-info.button.storm.full-width.text-center")).Click();
                     }
                     else
@@ -77,21 +90,18 @@ namespace WebsiteChangeDetector.Websites
                         continue;
                     }
 
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    await Task.Delay(TimeSpan.FromMilliseconds(600));
                     _webDriver.FindElement(By.Id("add-to-cart")).Click();
                     await Task.Delay(TimeSpan.FromMilliseconds(500));
                     _webDriver.Navigate().GoToUrl("https://www.sharp.com/cart/checkout/");
 
-                    // fill in custom fields
-                    var jobTitle = _webDriver.FindElement(By.Id("customField_39_47389_1"));
-                    jobTitle.SendKeys("Sales");
+                    // fill inputs
+                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    var customFieldsDiv = _webDriver.FindElement(By.ClassName("custom-fields"));
 
-                    var departmentName = _webDriver.FindElement(By.Id("customField_40_47389_1"));
-                    departmentName.SendKeys("None");
-
-                    var entityName = _webDriver.FindElement(By.Name("customField_41_47389_1"));
-                    var selectElement = new SelectElement(entityName);
-                    selectElement.SelectByText("N/A (Not a Sharp Employee)");
+                    customFieldsDiv.FindElement(By.XPath("//input[@type='text']")).SendKeys("Sales");
+                    customFieldsDiv.SendKeys(Keys.Tab);
+                    customFieldsDiv.SendKeys("Norton");
                 }
                 catch (Exception e)
                 {
