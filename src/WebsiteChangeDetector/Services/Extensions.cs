@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using WebsiteChangeDetector.Common;
 using WebsiteChangeDetector.Options;
 using WebsiteChangeDetector.Websites;
 
@@ -38,7 +39,10 @@ namespace WebsiteChangeDetector.Services
 
             // websites
             services.AddScoped<IWebsite, Petco>();
-            services.AddScoped<IWebsite, Sharp>();
+            //services.AddScoped<IWebsite, Sharp>();
+
+            // text client
+            services.AddSingleton<ITextClient, TextClient>();
         }
     }
 }
