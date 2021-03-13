@@ -4,7 +4,6 @@
     {
         public const string Section = "Service";
 
-        public string Url { get; set; }
         public bool Headless { get; set; }
         public int PollDelayInSeconds { get; set; }
         public int PageLoadDelayInSeconds { get; set; }
