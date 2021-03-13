@@ -1,25 +1,28 @@
-﻿using OpenQA.Selenium;
+﻿using Microsoft.Extensions.Options;
+using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
+using Microsoft.Extensions.Logging;
+using WebsiteChangeDetector.Options;
 
 namespace WebsiteChangeDetector.Websites
 {
     public class Sharp : IWebsite
     {
+        private readonly ILogger<Sharp> _logger;
         private readonly IWebDriver _webDriver;
-        private readonly AppSettings _settings;
+        private readonly ServiceOptions _options;
         private readonly List<string> _urls = new();
 
         private bool _loginNeeded = true;
 
-        public Sharp(IWebDriver webDriver, AppSettings settings)
+        public Sharp(ILogger<Sharp> logger, IWebDriver webDriver, IOptions<ServiceOptions> options)
         {
+            _logger = logger;
             _webDriver = webDriver;
-            _settings = settings;
+            _options = options.Value;
 
             _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-grossmont-center-covid-19-vaccine-clinic-2558");
             _urls.Add("https://www.sharp.com/health-classes/volunteer-registration-chula-vista-center-covid-19-vaccine-clinic-2554");
@@ -34,17 +37,17 @@ namespace WebsiteChangeDetector.Websites
             // login first if needed
             if (_loginNeeded)
             {
-                Console.WriteLine($"{DateTime.Now}: Login first");
+                _logger.LogDebug($"Login first");
                 _webDriver.Navigate().GoToUrl("https://account.sharp.com");
 
                 // enter email
                 var emailInput = _webDriver.FindElement(By.Id("email"));
-                emailInput.SendKeys(_settings.SharpEmail);
+                emailInput.SendKeys(_options.SharpEmail);
                 _webDriver.FindElement(By.Id("pre-login-submit-btn")).Click();
 
                 // enter password
                 var passwordInput = _webDriver.FindElement(By.Id("password"));
-                passwordInput.SendKeys(_settings.SharpPassword);
+                passwordInput.SendKeys(_options.SharpPassword);
                 _webDriver.FindElement(By.Id("btn-sign-in")).Click();
 
                 await Task.Delay(TimeSpan.FromSeconds(3));
@@ -58,7 +61,7 @@ namespace WebsiteChangeDetector.Websites
                 _webDriver.Navigate().GoToUrl(url);
 
                 // sleep after load
-                await Task.Delay(TimeSpan.FromSeconds(_settings.PageLoadDelayInSeconds));
+                await Task.Delay(TimeSpan.FromSeconds(_options.PageLoadDelayInSeconds));
 
                 // click through pages
                 try
@@ -67,7 +70,7 @@ namespace WebsiteChangeDetector.Websites
                     var availableDates = allDates.Where(x => x.Text.Contains("More info")).ToList();
 
                     if (availableDates.Any())
-                        Console.WriteLine($"{DateTime.Now}: Some dates found! Total is {availableDates.Count} for {url}");
+                        _logger.LogDebug($"Some dates found! Total is {availableDates.Count} for {url}");
 
                     var searchDatesExcluded = availableDates.Where(x => !x.Text.Contains("March 23")).ToList();
                     //var searchDates =  searchDatesExcluded.Where(x => 
@@ -80,13 +83,13 @@ namespace WebsiteChangeDetector.Websites
 
                     if (searchDates.Any())
                     {
-                        Console.WriteLine($"{DateTime.Now}: Sharp search result: True [{url}]");
+                        _logger.LogDebug($"Sharp search result: True [{url}]");
                         var firstDate = searchDates.First();
                         firstDate.FindElement(By.CssSelector(".section-more-info.button.storm.full-width.text-center")).Click();
                     }
                     else
                     {
-                        Console.WriteLine($"{DateTime.Now}: Sharp search result: False [{url}]");
+                        _logger.LogDebug($"Sharp search result: False [{url}]");
                         continue;
                     }
 

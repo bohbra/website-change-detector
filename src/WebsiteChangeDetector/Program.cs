@@ -1,39 +1,26 @@
-﻿using OpenQA.Selenium.Chrome;
-using System;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
+using WebsiteChangeDetector.Services;
 
 namespace WebsiteChangeDetector
 {
     class Program
     {
-        static async Task Main()
+        static async Task Main(string[] args)
         {
-            var chromeOptions = new ChromeOptions();
-            chromeOptions.AddArgument("--window-size=1024,768");
-            chromeOptions.AddArgument("--disable-logging");
-            chromeOptions.AddArgument("--log-level=3");
-
-            var settings = Configuration.GetAppSettings();
-            if (settings.Headless)
-            {
-                chromeOptions.AddArguments("headless");
-            }
-            var driver = new ChromeDriver(chromeOptions);
-            var detector = new Detector(driver, settings);
-
-            try
-            {
-                while (true)
-                {
-                    await detector.Scan();
-                    Console.WriteLine($"{DateTime.Now}: Pausing for {settings.PollDelayInSeconds} seconds");
-                    await Task.Delay(TimeSpan.FromSeconds(settings.PollDelayInSeconds));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception occurred. Message: {ex.Message}. Stack trace: {ex.StackTrace}");
-            }
+            await CreateHostBuilder(args).Build().RunAsync();
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureHostConfiguration(configHost =>
+                {
+                    configHost.AddJsonFile("appsettings.overrides.json", true);
+                })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddServices(hostContext);
+                });
     }
 }
