@@ -45,11 +45,11 @@ namespace WebsiteChangeDetector.Services
                     _textClient.Send(result.Message);
 
                     _logger.LogDebug("Pausing");
-                    await Task.Delay(TimeSpan.FromHours(4));
+                    await Task.Delay(TimeSpan.FromHours(4), stoppingToken);
                 }
 
                 _logger.LogDebug($"Pausing for {_settings.Value.PollDelayInSeconds} seconds");
-                await Task.Delay(TimeSpan.FromSeconds(_settings.Value.PollDelayInSeconds));
+                await Task.Delay(TimeSpan.FromSeconds(_settings.Value.PollDelayInSeconds), stoppingToken);
             }
         }
     }
