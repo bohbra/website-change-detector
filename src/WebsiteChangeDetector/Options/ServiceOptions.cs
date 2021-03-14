@@ -2,8 +2,6 @@
 {
     public class ServiceOptions
     {
-        public const string Section = "Service";
-
         public bool Headless { get; set; }
         public int PollDelayInSeconds { get; set; }
         public int PageLoadDelayInSeconds { get; set; }

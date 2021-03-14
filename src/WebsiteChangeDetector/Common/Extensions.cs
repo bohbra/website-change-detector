@@ -3,18 +3,18 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using WebsiteChangeDetector.Common;
 using WebsiteChangeDetector.Options;
+using WebsiteChangeDetector.Services;
 using WebsiteChangeDetector.Websites;
 
-namespace WebsiteChangeDetector.Services
+namespace WebsiteChangeDetector.Common
 {
     public static class Extensions
     {
         public static void AddServices(this IServiceCollection services, HostBuilderContext hostContext)
         {
             // configure options
-            services.Configure<ServiceOptions>(hostContext.Configuration.GetSection(ServiceOptions.Section));
+            services.Configure<ServiceOptions>(hostContext.Configuration.GetSection("Service"));
 
             // worker
             services.AddHostedService<Worker>();
@@ -34,11 +34,8 @@ namespace WebsiteChangeDetector.Services
                 return new ChromeDriver(chromeOptions);
             });
 
-            // detector
-            services.AddSingleton<IDetector, Detector>();
-
             // websites
-            services.AddScoped<IWebsite, Petco>();
+            services.AddScoped<IWebsite, PetcoWebsite>();
             //services.AddScoped<IWebsite, Sharp>();
 
             // text client

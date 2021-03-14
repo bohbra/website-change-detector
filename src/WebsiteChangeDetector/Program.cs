@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
-using WebsiteChangeDetector.Services;
+using WebsiteChangeDetector.Common;
 
 namespace WebsiteChangeDetector
 {

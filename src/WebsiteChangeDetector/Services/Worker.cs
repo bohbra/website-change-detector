@@ -2,9 +2,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using WebsiteChangeDetector.Common;
 using WebsiteChangeDetector.Options;
+using WebsiteChangeDetector.Websites;
 
 namespace WebsiteChangeDetector.Services
 {
@@ -12,29 +15,41 @@ namespace WebsiteChangeDetector.Services
     {
         private readonly ILogger<Worker> _logger;
         private readonly IOptions<ServiceOptions> _settings;
-        private readonly IDetector _detector;
+        private readonly IEnumerable<IWebsite> _websites;
+        private readonly ITextClient _textClient;
 
-        public Worker(ILogger<Worker> logger, IOptions<ServiceOptions> settings, IDetector detector)
+        public Worker(
+            ILogger<Worker> logger, 
+            IOptions<ServiceOptions> settings, 
+            IEnumerable<IWebsite> websites,
+            ITextClient textClient)
         {
             _logger = logger;
             _settings = settings;
-            _detector = detector;
+            _websites = websites;
+            _textClient = textClient;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            try
+            while (!stoppingToken.IsCancellationRequested)
             {
-                while (true)
+                // check each website
+                foreach (var website in _websites)
                 {
-                    await _detector.Scan();
-                    _logger.LogDebug($"Pausing for {_settings.Value.PollDelayInSeconds} seconds");
-                    await Task.Delay(TimeSpan.FromSeconds(_settings.Value.PollDelayInSeconds));
+                    var result = await website.Check();
+                    if (!result.Success)
+                        continue;
+
+                    // send text when successful
+                    _textClient.Send(result.Message);
+
+                    _logger.LogDebug("Pausing");
+                    await Task.Delay(TimeSpan.FromHours(4));
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Exception occurred", ex);
+
+                _logger.LogDebug($"Pausing for {_settings.Value.PollDelayInSeconds} seconds");
+                await Task.Delay(TimeSpan.FromSeconds(_settings.Value.PollDelayInSeconds));
             }
         }
     }

@@ -13,8 +13,6 @@ namespace WebsiteChangeDetector.Common
         public TextClient(IOptions<ServiceOptions> options)
         {
             _options = options.Value;
-
-            // setup twilio client
             TwilioClient.Init(_options.TwilioAccountSid, _options.TwilioAuthToken);
         }
 
