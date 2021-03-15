@@ -14,7 +14,7 @@ namespace WebsiteChangeDetector
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureHostConfiguration(configHost =>
+                .ConfigureAppConfiguration(configHost =>
                 {
                     configHost.AddJsonFile("appsettings.overrides.json", true);
                 })
