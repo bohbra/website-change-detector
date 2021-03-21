@@ -36,7 +36,8 @@ namespace WebsiteChangeDetector.Common
 
             // websites
             //services.AddScoped<IWebsite, PetcoWebsite>();
-            services.AddScoped<IWebsite, SharpWebsite>();
+            //services.AddScoped<IWebsite, SharpWebsite>();
+            services.AddScoped<IWebsite, BalboaTennisWebsite>();
 
             // text client
             services.AddSingleton<ITextClient, TextClient>();
