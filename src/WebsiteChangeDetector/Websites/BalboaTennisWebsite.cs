@@ -28,10 +28,10 @@ namespace WebsiteChangeDetector.Websites
             _searchOptions = new BalboaSearch
             {
                 GuestName = "Alison",
-                DayOfMonth = "27",
+                DaysOfMonth = new[] {22, 23},
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
-                Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17},
+                Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
             };
         }
 
@@ -44,25 +44,31 @@ namespace WebsiteChangeDetector.Websites
                 await Login();
             }
 
-            // switch to schedules frame
-            _webDriver.SwitchTo().DefaultContent();
-            _webDriver.SwitchTo().Frame("ifMain");
-
-            // select date for the current month
-            SelectDate();
-
-            // switch to calendar frame
-            _webDriver.SwitchTo().Frame("mygridframe");
-
-            // select times
-            var foundTime = SelectTimes();
-            if (foundTime)
+            // check all days
+            foreach (var day in _searchOptions.DaysOfMonth)
             {
-                HandleDialog(_searchOptions.GuestName);
-                return new WebsiteResult(true, "Booked reservation");
+                // switch to schedules frame
+                _webDriver.SwitchTo().DefaultContent();
+                _webDriver.SwitchTo().Frame("ifMain");
+
+                // select date for the current month
+                SelectDate(day);
+
+                // switch to calendar frame
+                _webDriver.SwitchTo().Frame("mygridframe");
+
+                // select times
+                var foundTime = SelectTimes();
+                if (foundTime)
+                {
+                    HandleDialog(_searchOptions.GuestName);
+                    return new WebsiteResult(true, "Booked reservation");
+                }
+
+                _logger.LogDebug($"Couldn't find time for {DateTime.Now:MMMM} {day}");
             }
 
-            _logger.LogDebug("Couldn't find any available times");
+            _logger.LogDebug("No times available");
             return new WebsiteResult(false);
         }
 
@@ -85,10 +91,10 @@ namespace WebsiteChangeDetector.Websites
             await Task.Delay(TimeSpan.FromSeconds(3));
         }
 
-        private void SelectDate()
+        private void SelectDate(int dayOfMonth)
         {
             var tableElement = _webDriver.FindElement(By.Id("Calendar1"));
-            var date = tableElement.FindElement(By.Id($"Q{_searchOptions.DayOfMonth}"));
+            var date = tableElement.FindElement(By.Id($"Q{dayOfMonth}"));
             date.Click();
         }
 
@@ -167,7 +173,7 @@ namespace WebsiteChangeDetector.Websites
     public class BalboaSearch
     {
         public string GuestName { get; set; }
-        public string DayOfMonth { get; set; }
+        public IEnumerable<int> DaysOfMonth { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
         public IEnumerable<int> Courts { get; set; }
