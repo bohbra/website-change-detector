@@ -14,18 +14,18 @@ namespace WebsiteChangeDetector.Services
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IOptions<ServiceOptions> _settings;
+        private readonly ServiceOptions _options;
         private readonly IEnumerable<IWebsite> _websites;
         private readonly ITextClient _textClient;
 
         public Worker(
             ILogger<Worker> logger, 
-            IOptions<ServiceOptions> settings, 
+            IOptions<ServiceOptions> options, 
             IEnumerable<IWebsite> websites,
             ITextClient textClient)
         {
             _logger = logger;
-            _settings = settings;
+            _options = options.Value;
             _websites = websites;
             _textClient = textClient;
         }
@@ -44,12 +44,15 @@ namespace WebsiteChangeDetector.Services
                     // send text when successful
                     _textClient.Send(result.Message);
 
-                    _logger.LogDebug("Pausing");
-                    await Task.Delay(TimeSpan.FromHours(4), stoppingToken);
+                    if (_options.PauseOnSuccess)
+                    {
+                        _logger.LogDebug("Pausing");
+                        await Task.Delay(TimeSpan.FromDays(7));
+                    }
                 }
 
-                _logger.LogDebug($"Pausing for {_settings.Value.PollDelayInSeconds} seconds");
-                await Task.Delay(TimeSpan.FromSeconds(_settings.Value.PollDelayInSeconds), stoppingToken);
+                _logger.LogDebug($"Pausing for {_options.PollDelayInSeconds} seconds");
+                await Task.Delay(TimeSpan.FromSeconds(_options.PollDelayInSeconds), stoppingToken);
             }
         }
     }
