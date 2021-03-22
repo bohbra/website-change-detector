@@ -28,7 +28,7 @@ namespace WebsiteChangeDetector.Websites
             _searchOptions = new BalboaSearch
             {
                 GuestName = "Alison",
-                DaysOfMonth = new[] {22, 23},
+                DaysOfMonth = new[] {23, 25},
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
                 Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
@@ -62,7 +62,7 @@ namespace WebsiteChangeDetector.Websites
                 if (foundTime)
                 {
                     HandleDialog(_searchOptions.GuestName);
-                    return new WebsiteResult(true, "Booked reservation");
+                    return new WebsiteResult(true, $"Booked reservation for {DateTime.Now:M} {day} @ {_searchOptions.StartTime}");
                 }
 
                 _logger.LogDebug($"Couldn't find time for {DateTime.Now:MMMM} {day}");
