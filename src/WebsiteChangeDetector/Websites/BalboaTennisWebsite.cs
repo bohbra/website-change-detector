@@ -57,15 +57,18 @@ namespace WebsiteChangeDetector.Websites
                 // switch to calendar frame
                 _webDriver.SwitchTo().Frame("mygridframe");
 
+                // time message
+                var timeMessage = $"{DateTime.Now:MMMM} {day} @ {_searchOptions.StartTime}";
+
                 // select times
                 var foundTime = SelectTimes();
                 if (foundTime)
                 {
                     HandleDialog(_searchOptions.GuestName);
-                    return new WebsiteResult(true, $"Booked reservation for {DateTime.Now:M} {day} @ {_searchOptions.StartTime}");
+                    return new WebsiteResult(true, $"Booked reservation for {timeMessage}");
                 }
 
-                _logger.LogDebug($"Couldn't find time for {DateTime.Now:MMMM} {day}");
+                _logger.LogDebug($"Couldn't find time for {timeMessage}");
             }
 
             _logger.LogDebug("No times available");
