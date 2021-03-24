@@ -28,7 +28,7 @@ namespace WebsiteChangeDetector.Websites
             _searchOptions = new BalboaSearch
             {
                 GuestName = "Alison",
-                DaysOfMonth = new[] {23, 25},
+                DaysOfMonth = new[] {24, 25},
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
                 Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
@@ -47,6 +47,27 @@ namespace WebsiteChangeDetector.Websites
             // check all days
             foreach (var day in _searchOptions.DaysOfMonth)
             {
+                // can't book a date in the past
+                if (day < DateTime.Now.Day)
+                {
+                    _logger.LogDebug("Can't book date in the past");
+                    continue;
+                }
+
+                // can't book out more than a week in advance
+                if (day > DateTime.Now.Day + 7)
+                {
+                    _logger.LogDebug("Can't book date more than a week in advance");
+                    continue;
+                }
+
+                // check if day is available (times a week out past 7:45 AM are available)
+                if (day == DateTime.Now.Day + 7 && DateTime.Now.TimeOfDay >= TimeSpan.Parse("07:45:03"))
+                {
+                    _logger.LogDebug("Date not available yet, needs to be past 7:45 AM");
+                    continue;
+                }
+
                 // switch to schedules frame
                 _webDriver.SwitchTo().DefaultContent();
                 _webDriver.SwitchTo().Frame("ifMain");
