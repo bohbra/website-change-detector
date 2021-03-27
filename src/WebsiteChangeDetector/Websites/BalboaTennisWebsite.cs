@@ -123,7 +123,7 @@ namespace WebsiteChangeDetector.Websites
             var nextMonthLink = _webDriver.FindElement(By.CssSelector("a[title='Go to the next month']"));
             if (searchDate.Month != DateTime.ParseExact(nextMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month - 1)
             {
-                _logger.LogDebug("Selecting next month on the calendar");
+                _logger.LogTrace("Selecting next month on the calendar");
                 nextMonthLink.Click();
             }
 
