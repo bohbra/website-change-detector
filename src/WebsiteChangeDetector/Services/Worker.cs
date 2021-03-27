@@ -32,28 +32,40 @@ namespace WebsiteChangeDetector.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Worker is starting");
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                // check each website
-                foreach (var website in _websites)
+                try
                 {
-                    var result = await website.Check();
-                    if (!result.Success)
-                        continue;
-
-                    // send text when successful
-                    _textClient.Send(result.Message);
-
-                    if (_options.PauseOnSuccess)
+                    // check each website
+                    foreach (var website in _websites)
                     {
-                        _logger.LogDebug("Pausing");
-                        await Task.Delay(TimeSpan.FromDays(7));
+                        var result = await website.Check();
+                        if (!result.Success)
+                            continue;
+
+                        // send text when successful
+                        _textClient.Send(result.Message);
+
+                        if (_options.PauseOnSuccess)
+                        {
+                            _logger.LogDebug("Pausing");
+                            await Task.Delay(TimeSpan.FromDays(7));
+                        }
                     }
                 }
-
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error occurred executing website check");
+                    throw;
+                }
+                
                 _logger.LogDebug($"Pausing for {_options.PollDelayInSeconds} seconds");
                 await Task.Delay(TimeSpan.FromSeconds(_options.PollDelayInSeconds), stoppingToken);
             }
+
+            _logger.LogInformation("Worker is stopping");
         }
     }
 }
