@@ -78,8 +78,8 @@ namespace WebsiteChangeDetector.Websites
                 _webDriver.SwitchTo().Frame("ifMain");
 
                 // select date for the current month
-                var dateFound = SelectDate(date);
-                if (!dateFound)
+                var foundDate = SelectDate(date);
+                if (!foundDate)
                     return new WebsiteResult(false);
 
                 // switch to calendar frame
