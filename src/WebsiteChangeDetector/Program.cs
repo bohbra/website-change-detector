@@ -9,8 +9,6 @@ namespace WebsiteChangeDetector
 {
     class Program
     {
-        public const string DefaultConsoleTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {ClassName} - {Message:lj} {NewLine}{Exception}";
-
         static async Task Main(string[] args)
         {
             await CreateHostBuilder(args).Build().RunAsync();
@@ -30,10 +28,10 @@ namespace WebsiteChangeDetector
                 {
                     configureLogger
                         .ReadFrom.Configuration(context.Configuration)
+                        .Enrich.With<ClassNameEnricher>()
                         .Enrich.WithProperty("EnvironmentName", context.HostingEnvironment.EnvironmentName)
                         .Enrich.WithProperty("ApplicationName", context.HostingEnvironment.ApplicationName)
-                        .Enrich.WithProperty("HostName", Environment.MachineName)
-                        .WriteTo.Console(outputTemplate: DefaultConsoleTemplate);
+                        .Enrich.WithProperty("HostName", Environment.MachineName);
                 });
     }
 }
