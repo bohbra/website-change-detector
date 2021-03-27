@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using OpenQA.Selenium.Support.UI;
+using WebsiteChangeDetector.Extensions;
 using WebsiteChangeDetector.Options;
 
 namespace WebsiteChangeDetector.Websites
@@ -31,8 +33,8 @@ namespace WebsiteChangeDetector.Websites
                 GuestName = "Alison",
                 Dates = new[]
                 {
-                    new DateTime(2021, 3, 31),
-                    new DateTime(2021, 4, 1)
+                    //new DateTime(2021, 3, 31),
+                    new DateTime(2021, 4, 27)
                 },
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
@@ -63,14 +65,7 @@ namespace WebsiteChangeDetector.Websites
                 if (date > DateTime.Now.AddDays(7))
                 {
                     _logger.LogDebug("Can't book date more than a week in advance");
-                    continue;
-                }
-
-                // check if day is available (times a week out past 7:45 AM are available)
-                if (date == DateTime.Now.AddDays(7) && DateTime.Now.TimeOfDay >= TimeSpan.Parse("07:45:03"))
-                {
-                    _logger.LogDebug("Date not available yet, needs to be past 7:45 AM");
-                    continue;
+                    //continue;
                 }
 
                 // switch to schedules frame
@@ -150,6 +145,16 @@ namespace WebsiteChangeDetector.Websites
                 return false;
             }
             date.Click();
+
+            // check if popup dialog occurred after selecting date
+            if (_webDriver.FindOptionalElement(By.ClassName("tbalertmodal"), out var dialogElement))
+            {
+                _logger.LogDebug($"Found dialog, skipping. Text = {dialogElement.Text}");
+                var closeButton = dialogElement.FindElements(By.ClassName("tbalertclose")).First(x => x.Displayed);
+                closeButton.Click();
+                return false;
+            }
+
             return true;
         }
 

@@ -3,13 +3,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using WebsiteChangeDetector.Common;
 using WebsiteChangeDetector.Options;
 using WebsiteChangeDetector.Services;
 using WebsiteChangeDetector.Websites;
 
-namespace WebsiteChangeDetector.Common
+namespace WebsiteChangeDetector.Extensions
 {
-    public static class Extensions
+    public static class ServiceExtensions
     {
         public static void AddServices(this IServiceCollection services, HostBuilderContext hostContext)
         {

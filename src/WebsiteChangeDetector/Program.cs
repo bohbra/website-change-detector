@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 using Serilog;
 using WebsiteChangeDetector.Common;
+using WebsiteChangeDetector.Extensions;
 
 namespace WebsiteChangeDetector
 {
