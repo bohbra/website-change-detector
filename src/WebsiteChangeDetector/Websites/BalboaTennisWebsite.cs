@@ -61,15 +61,8 @@ namespace WebsiteChangeDetector.Websites
                 // can't book a date in the past
                 if (date < DateTime.Now)
                 {
-                    _logger.LogDebug("Can't book date in the past");
+                    _logger.LogWarning("Can't book date in the past");
                     continue;
-                }
-
-                // can't book out more than a week in advance
-                if (date > DateTime.Now.AddDays(7))
-                {
-                    _logger.LogDebug("Can't book date more than a week in advance");
-                    //continue;
                 }
 
                 // switch to schedules frame
