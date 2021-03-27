@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using WebsiteChangeDetector.Options;
@@ -28,7 +29,11 @@ namespace WebsiteChangeDetector.Websites
             _searchOptions = new BalboaSearch
             {
                 GuestName = "Alison",
-                DaysOfMonth = new[] {24, 25},
+                Dates = new[]
+                {
+                    new DateTime(2021, 3, 31),
+                    new DateTime(2021, 4, 1)
+                },
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
                 Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
@@ -45,24 +50,24 @@ namespace WebsiteChangeDetector.Websites
             }
 
             // check all days
-            foreach (var day in _searchOptions.DaysOfMonth)
+            foreach (var date in _searchOptions.Dates)
             {
                 // can't book a date in the past
-                if (day < DateTime.Now.Day)
+                if (date < DateTime.Now)
                 {
                     _logger.LogDebug("Can't book date in the past");
                     continue;
                 }
 
                 // can't book out more than a week in advance
-                if (day > DateTime.Now.Day + 7)
+                if (date > DateTime.Now.AddDays(7))
                 {
                     _logger.LogDebug("Can't book date more than a week in advance");
                     continue;
                 }
 
                 // check if day is available (times a week out past 7:45 AM are available)
-                if (day == DateTime.Now.Day + 7 && DateTime.Now.TimeOfDay >= TimeSpan.Parse("07:45:03"))
+                if (date == DateTime.Now.AddDays(7) && DateTime.Now.TimeOfDay >= TimeSpan.Parse("07:45:03"))
                 {
                     _logger.LogDebug("Date not available yet, needs to be past 7:45 AM");
                     continue;
@@ -73,13 +78,15 @@ namespace WebsiteChangeDetector.Websites
                 _webDriver.SwitchTo().Frame("ifMain");
 
                 // select date for the current month
-                SelectDate(day);
+                var dateFound = SelectDate(date);
+                if (!dateFound)
+                    return new WebsiteResult(false);
 
                 // switch to calendar frame
                 _webDriver.SwitchTo().Frame("mygridframe");
 
                 // time message
-                var timeMessage = $"{DateTime.Now:MMMM} {day} @ {_searchOptions.StartTime}";
+                var timeMessage = $"{DateTime.Now:MMMM} {date} @ {_searchOptions.StartTime}";
 
                 // select times
                 var foundTime = SelectTimes();
@@ -115,11 +122,32 @@ namespace WebsiteChangeDetector.Websites
             await Task.Delay(TimeSpan.FromSeconds(3));
         }
 
-        private void SelectDate(int dayOfMonth)
+        private bool SelectDate(DateTime searchDate)
         {
+            // select the current month
+            var nextMonthLink = _webDriver.FindElement(By.CssSelector("a[title='Go to the next month']"));
+            if (searchDate.Month != DateTime.ParseExact(nextMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month - 1)
+            {
+                _logger.LogDebug("Selecting next month on the calendar");
+                nextMonthLink.Click();
+            }
+
+            // select date in calendar
             var tableElement = _webDriver.FindElement(By.Id("Calendar1"));
-            var date = tableElement.FindElement(By.Id($"Q{dayOfMonth}"));
+
+            // search dates for the currently selected month (ignores calendarna)
+            var selectedDates = tableElement.FindElements(By.ClassName("calendarseldate"));
+            var unselectedDates = tableElement.FindElements(By.ClassName("calendarunsel"));
+            var searchableDates = selectedDates.Concat(unselectedDates);
+
+            var date = searchableDates.FirstOrDefault(x => Convert.ToInt32(x.Text) == searchDate.Day);
+            if (date == null)
+            {
+                _logger.LogDebug($"Couldn't find date {searchDate}");
+                return false;
+            }
             date.Click();
+            return true;
         }
 
         private bool SelectTimes()
@@ -197,7 +225,7 @@ namespace WebsiteChangeDetector.Websites
     public class BalboaSearch
     {
         public string GuestName { get; set; }
-        public IEnumerable<int> DaysOfMonth { get; set; }
+        public IEnumerable<DateTime> Dates { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
         public IEnumerable<int> Courts { get; set; }
