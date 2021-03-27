@@ -86,7 +86,7 @@ namespace WebsiteChangeDetector.Websites
                 _webDriver.SwitchTo().Frame("mygridframe");
 
                 // time message
-                var timeMessage = $"{DateTime.Now:MMMM} {date} @ {_searchOptions.StartTime}";
+                var timeMessage = $"{date.ToShortDateString()} @ {_searchOptions.StartTime}";
 
                 // select times
                 var foundTime = SelectTimes();
@@ -124,6 +124,9 @@ namespace WebsiteChangeDetector.Websites
 
         private bool SelectDate(DateTime searchDate)
         {
+            // reset calendar to current month
+            _webDriver.FindElement(By.Id("btnMoveToday")).Click();
+
             // select the current month
             var nextMonthLink = _webDriver.FindElement(By.CssSelector("a[title='Go to the next month']"));
             if (searchDate.Month != DateTime.ParseExact(nextMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month - 1)
@@ -143,7 +146,7 @@ namespace WebsiteChangeDetector.Websites
             var date = searchableDates.FirstOrDefault(x => Convert.ToInt32(x.Text) == searchDate.Day);
             if (date == null)
             {
-                _logger.LogDebug($"Couldn't find date {searchDate}");
+                _logger.LogWarning($"Couldn't find date {searchDate}");
                 return false;
             }
             date.Click();
