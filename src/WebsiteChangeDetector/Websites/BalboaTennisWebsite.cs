@@ -78,7 +78,7 @@ namespace WebsiteChangeDetector.Websites
                 _webDriver.SwitchTo().Frame("mygridframe");
 
                 // time message
-                var timeMessage = $"{date.ToShortDateString()} @ {_searchOptions.StartTime}";
+                var timeMessage = $"{date:MM/dd/yyyy} @ {_searchOptions.StartTime}";
 
                 // select times
                 var foundTime = SelectTimes();
