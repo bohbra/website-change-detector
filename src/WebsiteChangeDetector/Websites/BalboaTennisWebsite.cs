@@ -33,8 +33,12 @@ namespace WebsiteChangeDetector.Websites
                 GuestName = "Alison",
                 Dates = new[]
                 {
-                    //new DateTime(2021, 3, 31),
-                    new DateTime(2021, 4, 27)
+                    new DateTime(2021, 3, 29),
+                    new DateTime(2021, 3, 30),
+                    new DateTime(2021, 3, 31),
+                    new DateTime(2021, 4, 1),
+                    new DateTime(2021, 4, 2),
+                    new DateTime(2021, 4, 4)
                 },
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
