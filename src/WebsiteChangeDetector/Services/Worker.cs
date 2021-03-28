@@ -48,7 +48,7 @@ namespace WebsiteChangeDetector.Services
                         // log success message
                         _logger.LogDebug(result.Message);
 
-                        // send text when successful
+                        // send text
                         _textClient.Send(result.Message);
 
                         if (_options.PauseOnSuccess)
