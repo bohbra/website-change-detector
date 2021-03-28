@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using OpenQA.Selenium.Support.UI;
 using WebsiteChangeDetector.Extensions;
 using WebsiteChangeDetector.Options;
 
