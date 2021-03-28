@@ -94,7 +94,10 @@ namespace WebsiteChangeDetector.Websites
                 var foundTime = SelectTimes();
                 if (foundTime)
                 {
-                    HandleDialog(_searchOptions.GuestName);
+                    var success = HandleDialog(_searchOptions.GuestName);
+                    if (!success)
+                        continue;
+
                     return new WebsiteResult(true, $"Booked reservation for {timeMessage}");
                 }
 
@@ -133,7 +136,7 @@ namespace WebsiteChangeDetector.Websites
             var nextMonthLink = _webDriver.FindElement(By.CssSelector("a[title='Go to the next month']"));
             if (searchDate.Month != DateTime.ParseExact(nextMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month - 1)
             {
-                _logger.LogTrace("Selecting next month on the calendar");
+                _logger.LogDebug("Selecting next month on the calendar");
                 nextMonthLink.Click();
             }
 
@@ -214,7 +217,7 @@ namespace WebsiteChangeDetector.Websites
             return courtNumber;
         }
 
-        private void HandleDialog(string guestName)
+        private bool HandleDialog(string guestName)
         {
             // switch to schedules frame
             _webDriver.SwitchTo().DefaultContent();
@@ -222,6 +225,15 @@ namespace WebsiteChangeDetector.Websites
 
             // click book
             _webDriver.FindElement(By.Id("btnnext")).Click();
+
+            // check if popup dialog occurred after selecting date
+            if (_webDriver.FindOptionalElement(By.ClassName("tbalertmodal"), out var dialogElement))
+            {
+                _logger.LogDebug($"Found dialog, skipping. Text = {dialogElement.Text}");
+                var closeButton = dialogElement.FindElements(By.ClassName("tbalertclose")).First(x => x.Displayed);
+                closeButton.Click();
+                return false;
+            }
 
             // switch to popup frame
             _webDriver.SwitchTo().DefaultContent();
@@ -235,6 +247,8 @@ namespace WebsiteChangeDetector.Websites
 
             // confirm
             _webDriver.FindElement(By.Id("btnConfirmAndPay")).Click();
+
+            return true;
         }
     }
 
