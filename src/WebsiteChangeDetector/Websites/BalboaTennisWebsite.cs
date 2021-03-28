@@ -37,8 +37,7 @@ namespace WebsiteChangeDetector.Websites
                     new DateTime(2021, 3, 30),
                     new DateTime(2021, 3, 31),
                     new DateTime(2021, 4, 1),
-                    new DateTime(2021, 4, 2),
-                    new DateTime(2021, 4, 4)
+                    new DateTime(2021, 4, 2)
                 },
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
@@ -62,9 +61,6 @@ namespace WebsiteChangeDetector.Websites
                 await Login();
             }
 
-            // navigate to page to clear memory
-            _webDriver.Navigate().GoToUrl("https://balboatc.tennisbookings.com/Default.aspx?open=1");
-
             // check all days
             foreach (var date in _searchOptions.Dates)
             {
@@ -75,31 +71,26 @@ namespace WebsiteChangeDetector.Websites
                     continue;
                 }
 
-                // switch to schedules frame
-                _webDriver.SwitchTo().DefaultContent();
-                _webDriver.SwitchTo().Frame("ifMain");
-
                 // select date for the current month
                 var foundDate = SelectDate(date);
                 if (!foundDate)
                     return new WebsiteResult(false);
 
-                // switch to calendar frame
-                _webDriver.SwitchTo().Frame("mygridframe");
-
                 // time message
                 var timeMessage = $"{date:MM/dd/yyyy} @ {_searchOptions.StartTime}";
 
-                // select times
-                var foundTime = SelectTimes();
-                if (foundTime)
+                // select time
+                var foundTime = SelectTime();
+                if (!foundTime)
                 {
-                    var success = HandleDialog(_searchOptions.GuestName);
-                    if (!success)
-                        continue;
-
-                    return new WebsiteResult(true, $"Booked reservation for {timeMessage}");
+                    _logger.LogDebug($"Couldn't find time for {timeMessage}");
+                    continue;
                 }
+
+                // book time
+                var success = BookTime(_searchOptions.GuestName);
+                if (success) 
+                    return new WebsiteResult(true, $"Booked reservation for {timeMessage}");
 
                 _logger.LogDebug($"Couldn't find time for {timeMessage}");
             }
@@ -129,12 +120,19 @@ namespace WebsiteChangeDetector.Websites
 
         private bool SelectDate(DateTime searchDate)
         {
-            // reset calendar to current month
-            _webDriver.FindElement(By.Id("btnMoveToday")).Click();
+            // switch to schedules frame
+            _webDriver.SwitchTo().DefaultContent();
+            _webDriver.SwitchTo().Frame("ifMain");
 
-            // select the current month
+            // select the month
+            var prevMonthLink = _webDriver.FindElement(By.CssSelector("a[title='Go to the previous month']"));
             var nextMonthLink = _webDriver.FindElement(By.CssSelector("a[title='Go to the next month']"));
-            if (searchDate.Month != DateTime.ParseExact(nextMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month - 1)
+            if (searchDate.Month == DateTime.ParseExact(prevMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month)
+            {
+                _logger.LogDebug("Selecting previous month on the calendar");
+                prevMonthLink.Click();
+            } 
+            else if (searchDate.Month == DateTime.ParseExact(nextMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month)
             {
                 _logger.LogDebug("Selecting next month on the calendar");
                 nextMonthLink.Click();
@@ -168,8 +166,12 @@ namespace WebsiteChangeDetector.Websites
             return true;
         }
 
-        private bool SelectTimes()
+        private bool SelectTime()
         {
+            // switch to calendar frame
+            _webDriver.SwitchTo().Frame("mygridframe");
+
+            // get calendar table
             var tableElement = _webDriver.FindElement(By.Id("TT"));
 
             // available start times
@@ -217,7 +219,7 @@ namespace WebsiteChangeDetector.Websites
             return courtNumber;
         }
 
-        private bool HandleDialog(string guestName)
+        private bool BookTime(string guestName)
         {
             // switch to schedules frame
             _webDriver.SwitchTo().DefaultContent();
