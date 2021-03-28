@@ -62,6 +62,9 @@ namespace WebsiteChangeDetector.Websites
                 await Login();
             }
 
+            // navigate to page to clear memory
+            _webDriver.Navigate().GoToUrl("https://balboatc.tennisbookings.com/Default.aspx?open=1");
+
             // check all days
             foreach (var date in _searchOptions.Dates)
             {
@@ -169,12 +172,12 @@ namespace WebsiteChangeDetector.Websites
             // available start times
             var rowTimeStart = tableElement.FindElement(By.CssSelector($"tr[myTag='{_searchOptions.StartTime}']"));
             var openStartTimes = rowTimeStart.FindElements(By.ClassName("f"));
-            var openStartTimesByCourt = openStartTimes.Where(x => _searchOptions.Courts.Contains(CalculateCourtNumber(x)));
+            var openStartTimesByCourt = openStartTimes.Where(x => _searchOptions.Courts.Contains(CalculateCourtNumber(x))).ToList();
 
             // available end times
             var rowTimeEnd = tableElement.FindElement(By.CssSelector($"tr[myTag='{_searchOptions.EndTime}']"));
             var openEndTimes = rowTimeEnd.FindElements(By.ClassName("f"));
-            var openEndTimesByCourt = openEndTimes.Where(x => _searchOptions.Courts.Contains(CalculateCourtNumber(x)));
+            var openEndTimesByCourt = openEndTimes.Where(x => _searchOptions.Courts.Contains(CalculateCourtNumber(x))).ToList();
 
             // if there are no openings, stop
             if (!openStartTimesByCourt.Any() || !openEndTimesByCourt.Any())
@@ -206,7 +209,8 @@ namespace WebsiteChangeDetector.Websites
 
         private int CalculateCourtNumber(IWebElement tdElement)
         {
-            var courtNumber = Convert.ToInt32(tdElement.GetAttribute("id").Split('c').Last()) + 3;
+            var courtElement = tdElement.GetAttribute("id").Split('c').Last();
+            var courtNumber = Convert.ToInt32(courtElement) + 3;
             return courtNumber;
         }
 
