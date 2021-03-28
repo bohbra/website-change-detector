@@ -37,7 +37,8 @@ namespace WebsiteChangeDetector.Websites
                     new DateTime(2021, 3, 30),
                     new DateTime(2021, 3, 31),
                     new DateTime(2021, 4, 1),
-                    new DateTime(2021, 4, 2)
+                    new DateTime(2021, 4, 2),
+                    new DateTime(2021, 4, 5)
                 },
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
@@ -129,12 +130,12 @@ namespace WebsiteChangeDetector.Websites
             var nextMonthLink = _webDriver.FindElement(By.CssSelector("a[title='Go to the next month']"));
             if (searchDate.Month == DateTime.ParseExact(prevMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month)
             {
-                _logger.LogDebug("Selecting previous month on the calendar");
+                _logger.LogTrace("Selecting previous month on the calendar");
                 prevMonthLink.Click();
             } 
             else if (searchDate.Month == DateTime.ParseExact(nextMonthLink.Text, "MMM", CultureInfo.CurrentCulture).Month)
             {
-                _logger.LogDebug("Selecting next month on the calendar");
+                _logger.LogTrace("Selecting next month on the calendar");
                 nextMonthLink.Click();
             }
 
