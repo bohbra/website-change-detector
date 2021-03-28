@@ -45,12 +45,15 @@ namespace WebsiteChangeDetector.Services
                         if (!result.Success)
                             continue;
 
+                        // log success message
+                        _logger.LogDebug(result.Message);
+
                         // send text when successful
                         _textClient.Send(result.Message);
 
                         if (_options.PauseOnSuccess)
                         {
-                            _logger.LogDebug("Pausing");
+                            _logger.LogDebug("Pausing because check was successful");
                             await Task.Delay(TimeSpan.FromDays(7));
                         }
                     }
