@@ -62,6 +62,9 @@ namespace WebsiteChangeDetector.Websites
                 await Login();
             }
 
+            // refresh page to fix any memory leaks
+            _webDriver.Navigate().Refresh();
+
             // check all days
             foreach (var date in _searchOptions.Dates)
             {
@@ -259,7 +262,6 @@ namespace WebsiteChangeDetector.Websites
     {
         public string GuestName { get; set; }
         public DateTime DelaySearchTime { get; set; }
-
         public IEnumerable<DateTime> Dates { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
