@@ -30,7 +30,7 @@ namespace WebsiteChangeDetector.Websites
             _searchOptions = new BalboaSearch
             {
                 GuestName = "Alison",
-                //DelaySearchTime = DateTime.Now,
+                DelaySearchTime = null,
                 Dates = new[]
                 {
                     new DateTime(2021, 3, 29),
