@@ -30,7 +30,7 @@ namespace WebsiteChangeDetector.Websites
             _searchOptions = new BalboaSearch
             {
                 GuestName = "Alison",
-                DelaySearchTime = DateTime.Now,
+                //DelaySearchTime = DateTime.Now,
                 Dates = new[]
                 {
                     new DateTime(2021, 3, 29),
@@ -49,9 +49,9 @@ namespace WebsiteChangeDetector.Websites
         public async Task<WebsiteResult> Check()
         {
             // check if there's a delay to start searching
-            if (DateTime.Now.TimeOfDay <= _searchOptions.DelaySearchTime.TimeOfDay)
+            if (DateTime.Now.TimeOfDay <= _searchOptions.DelaySearchTime?.TimeOfDay)
             {
-                _logger.LogDebug($"Delaying start until {_searchOptions.DelaySearchTime.TimeOfDay}");
+                _logger.LogDebug($"Delaying start until {_searchOptions.DelaySearchTime?.TimeOfDay}");
                 return new WebsiteResult(false);
             }
 
@@ -261,7 +261,7 @@ namespace WebsiteChangeDetector.Websites
     public class BalboaSearch
     {
         public string GuestName { get; set; }
-        public DateTime DelaySearchTime { get; set; }
+        public DateTime? DelaySearchTime { get; set; }
         public IEnumerable<DateTime> Dates { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
