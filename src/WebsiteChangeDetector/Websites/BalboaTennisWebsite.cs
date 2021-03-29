@@ -37,8 +37,7 @@ namespace WebsiteChangeDetector.Websites
                     new DateTime(2021, 3, 30),
                     new DateTime(2021, 3, 31),
                     new DateTime(2021, 4, 1),
-                    new DateTime(2021, 4, 2),
-                    new DateTime(2021, 4, 5)
+                    new DateTime(2021, 4, 2)
                 },
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
@@ -66,22 +65,22 @@ namespace WebsiteChangeDetector.Websites
             _webDriver.Navigate().Refresh();
 
             // check all days
-            foreach (var date in _searchOptions.Dates)
+            foreach (var searchDate in _searchOptions.Dates)
             {
                 // can't book a date in the past
-                if (date < DateTime.Now)
+                if (searchDate.Date < DateTime.Now.Date)
                 {
                     _logger.LogWarning("Can't book date in the past");
                     continue;
                 }
 
                 // select date for the current month
-                var foundDate = SelectDate(date);
+                var foundDate = SelectDate(searchDate);
                 if (!foundDate)
                     return new WebsiteResult(false);
 
                 // time message
-                var timeMessage = $"{date:MM/dd/yyyy} @ {_searchOptions.StartTime}";
+                var timeMessage = $"{searchDate:MM/dd/yyyy} @ {_searchOptions.StartTime}";
 
                 // select time
                 var foundTime = SelectTime();
