@@ -217,7 +217,7 @@ namespace WebsiteChangeDetector.Websites
 
         private int CalculateCourtNumber(IWebElement tdElement)
         {
-            var courtElement = tdElement.GetAttribute("id").Split('c').Last();
+            var courtElement = tdElement.GetAttribute("id").Split("c").Last();
             var courtNumber = Convert.ToInt32(courtElement) + 3;
             return courtNumber;
         }
