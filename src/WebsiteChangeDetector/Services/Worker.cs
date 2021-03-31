@@ -61,7 +61,7 @@ namespace WebsiteChangeDetector.Services
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Error occurred executing website check");
-                    _textClient.Send("Error occurred");
+                    _textClient.Send($"Error occurred @ {DateTime.Now}");
                     throw;
                 }
                 
