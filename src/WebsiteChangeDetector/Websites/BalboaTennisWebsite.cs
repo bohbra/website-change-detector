@@ -33,11 +33,11 @@ namespace WebsiteChangeDetector.Websites
                 DelaySearchTime = null,
                 Dates = new[]
                 {
-                    new DateTime(2021, 3, 29),
-                    new DateTime(2021, 3, 30),
-                    new DateTime(2021, 3, 31),
-                    new DateTime(2021, 4, 1),
-                    new DateTime(2021, 4, 2)
+                    new DateTime(2021, 4, 5),
+                    new DateTime(2021, 4, 6),
+                    new DateTime(2021, 4, 7),
+                    new DateTime(2021, 4, 8),
+                    new DateTime(2021, 4, 9)
                 },
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
@@ -194,6 +194,12 @@ namespace WebsiteChangeDetector.Websites
             // find column match
             foreach (var startWebElement in openStartTimesByCourt)
             {
+                if (!startWebElement.Displayed || !startWebElement.Enabled)
+                {
+                    _logger.LogTrace("Can't select time because element is either disabled or not displayed");
+                    continue;
+                }
+
                 // r19c7
                 var startId = startWebElement.GetAttribute("id");
                 var columnSplit = startId.Split("c");
@@ -235,8 +241,7 @@ namespace WebsiteChangeDetector.Websites
             if (_webDriver.FindOptionalElement(By.ClassName("tbalertmodal"), out var dialogElement))
             {
                 _logger.LogDebug($"Found dialog, skipping. Text = {dialogElement.Text}");
-                var closeButton = dialogElement.FindElements(By.ClassName("tbalertclose")).First(x => x.Displayed);
-                closeButton.Click();
+                dialogElement.SendKeys(Keys.Escape);
                 return false;
             }
 
@@ -252,6 +257,15 @@ namespace WebsiteChangeDetector.Websites
 
             // confirm
             _webDriver.FindElement(By.Id("btnConfirmAndPay")).Click();
+            _logger.LogDebug("Clicking book on dialog");
+
+            // check if popup dialog occurred after selecting book
+            if (_webDriver.FindOptionalElement(By.ClassName("tbalertmodal"), out var dialog))
+            {
+                _logger.LogDebug($"Found dialog, skipping. Text = {dialogElement.Text}");
+                dialog.SendKeys(Keys.Escape);
+                return false;
+            }
 
             return true;
         }
