@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using OpenQA.Selenium.Interactions;
 using WebsiteChangeDetector.Extensions;
 using WebsiteChangeDetector.Options;
 
@@ -158,13 +159,8 @@ namespace WebsiteChangeDetector.Websites
             date.Click();
 
             // check if popup dialog occurred after selecting date
-            if (_webDriver.FindOptionalElement(By.ClassName("tbalertmodal"), out var dialogElement))
-            {
-                _logger.LogDebug($"Found dialog, skipping. Text = {dialogElement.Text}");
-                var closeButton = dialogElement.FindElements(By.ClassName("tbalertclose")).First(x => x.Displayed);
-                closeButton.Click();
+            if (DetectAlertDialog())
                 return false;
-            }
 
             return true;
         }
@@ -236,14 +232,11 @@ namespace WebsiteChangeDetector.Websites
 
             // click book
             _webDriver.FindElement(By.Id("btnnext")).Click();
+            _logger.LogDebug("Clicking book on main page");
 
-            // check if popup dialog occurred after selecting date
-            if (_webDriver.FindOptionalElement(By.ClassName("tbalertmodal"), out var dialogElement))
-            {
-                _logger.LogDebug($"Found dialog, skipping. Text = {dialogElement.Text}");
-                dialogElement.SendKeys(Keys.Escape);
+            // check if alert dialog occurred after selecting date
+            if (DetectAlertDialog())
                 return false;
-            }
 
             // switch to popup frame
             _webDriver.SwitchTo().DefaultContent();
@@ -259,14 +252,20 @@ namespace WebsiteChangeDetector.Websites
             _webDriver.FindElement(By.Id("btnConfirmAndPay")).Click();
             _logger.LogDebug("Clicking book on dialog");
 
-            // check if popup dialog occurred after selecting book
-            if (_webDriver.FindOptionalElement(By.ClassName("tbalertmodal"), out var dialog))
-            {
-                _logger.LogDebug($"Found dialog, skipping. Text = {dialogElement.Text}");
-                dialog.SendKeys(Keys.Escape);
+            // check if alert dialog occurred after selecting book
+            if (DetectAlertDialog())
                 return false;
-            }
 
+            return true;
+        }
+
+        private bool DetectAlertDialog()
+        {
+            if (!_webDriver.FindOptionalElement(By.ClassName("tbalertmodal"), out var dialog)) 
+                return false;
+
+            _logger.LogDebug($"Found dialog, skipping. Text = {dialog.Text}");
+            new Actions(_webDriver).SendKeys(Keys.Escape).Perform();
             return true;
         }
     }
