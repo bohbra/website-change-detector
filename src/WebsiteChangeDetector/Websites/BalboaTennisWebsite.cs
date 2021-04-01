@@ -160,7 +160,6 @@ namespace WebsiteChangeDetector.Websites
 
             try
             {
-                // A popup occurs right when the click does
                 date.Click();
             }
             catch (ElementClickInterceptedException e)
