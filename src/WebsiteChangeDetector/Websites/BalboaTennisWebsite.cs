@@ -68,6 +68,10 @@ namespace WebsiteChangeDetector.Websites
             // check all days
             foreach (var searchDate in _searchOptions.Dates)
             {
+                // time message
+                var timeMessage = $"{searchDate:MM/dd/yyyy} @ {_searchOptions.StartTime}";
+                _logger.LogDebug($"Searching for {timeMessage}");
+
                 // can't book a date in the past
                 if (searchDate.Date < DateTime.Now.Date)
                 {
@@ -79,9 +83,6 @@ namespace WebsiteChangeDetector.Websites
                 var foundDate = SelectDate(searchDate);
                 if (!foundDate)
                     return new WebsiteResult(false);
-
-                // time message
-                var timeMessage = $"{searchDate:MM/dd/yyyy} @ {_searchOptions.StartTime}";
 
                 // select time
                 var foundTime = SelectTime();
@@ -156,7 +157,17 @@ namespace WebsiteChangeDetector.Websites
                 _logger.LogWarning($"Couldn't find date {searchDate}");
                 return false;
             }
-            date.Click();
+
+            try
+            {
+                // A popup occurs right when the click does
+                date.Click();
+            }
+            catch (ElementClickInterceptedException e)
+            {
+                _logger.LogWarning("Click intercepted by dialog when trying to select date, skipping", e);
+                return false;
+            }
 
             // check if popup dialog occurred after selecting date
             if (DetectAlertDialog())
