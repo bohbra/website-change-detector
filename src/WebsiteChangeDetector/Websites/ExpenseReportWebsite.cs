@@ -48,7 +48,7 @@ namespace WebsiteChangeDetector.Websites
 
             // wait for login to complete
             _logger.LogDebug("Wait for login to complete");
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            await Task.Delay(TimeSpan.FromSeconds(4));
 
             // dismiss any popup
             _logger.LogDebug("Dismissing any popups");
@@ -60,7 +60,7 @@ namespace WebsiteChangeDetector.Websites
             startReport.Click();
 
             // enter report name
-            var reportNameInput = _webDriver.FindElement(By.Name("Report_1207_TRAVELER_ISNEW_Name"));
+            var reportNameInput = _webDriver.FindSlowElement(By.Name("Report_1207_TRAVELER_ISNEW_Name"));
             reportNameInput.SendKeys($"Home internet ({_options.ExpenseReportTransactionDate})");
 
             // enter business purpose
