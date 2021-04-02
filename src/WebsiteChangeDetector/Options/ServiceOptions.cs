@@ -14,5 +14,7 @@
         public string SharpPassword { get; set; }
         public string BalboaTennisEmail { get; set; }
         public string BalboaTennisPassword { get; set; }
+        public string ExpenseReportEmail { get; set; }
+        public string ExpenseReportPassword { get; set; }
     }
 }

@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 
 namespace WebsiteChangeDetector.Extensions
 {
@@ -19,6 +21,12 @@ namespace WebsiteChangeDetector.Extensions
             }
 
             return false;
+        }
+
+        public static IWebElement FindSlowElement(this IWebDriver driver, By by)
+        {
+            var wait = new WebDriverWait(driver, new TimeSpan(0, 0, 10));
+            return wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(by));
         }
     }
 }
