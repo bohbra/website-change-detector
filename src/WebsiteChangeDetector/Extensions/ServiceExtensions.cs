@@ -38,8 +38,8 @@ namespace WebsiteChangeDetector.Extensions
             // websites
             //services.AddScoped<IWebsite, PetcoWebsite>();
             //services.AddScoped<IWebsite, SharpWebsite>();
-            //services.AddScoped<IWebsite, BalboaTennisWebsite>();
-            services.AddScoped<IWebsite, ExpenseReportWebsite>();
+            services.AddScoped<IWebsite, BalboaTennisWebsite>();
+            //services.AddScoped<IWebsite, ExpenseReportWebsite>();
 
             // text client
             services.AddSingleton<ITextClient, TextClient>();
