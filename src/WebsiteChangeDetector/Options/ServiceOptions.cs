@@ -1,4 +1,6 @@
-﻿namespace WebsiteChangeDetector.Options
+﻿using System;
+
+namespace WebsiteChangeDetector.Options
 {
     public class ServiceOptions
     {
@@ -16,5 +18,6 @@
         public string BalboaTennisPassword { get; set; }
         public string ExpenseReportEmail { get; set; }
         public string ExpenseReportPassword { get; set; }
+        public string ExpenseReportTransactionDate { get; set; }
     }
 }

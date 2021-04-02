@@ -5,10 +5,10 @@ using OpenQA.Selenium.Interactions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using WindowsInput;
-using WindowsInput.Native;
 using WebsiteChangeDetector.Extensions;
 using WebsiteChangeDetector.Options;
+using WindowsInput;
+using WindowsInput.Native;
 
 namespace WebsiteChangeDetector.Websites
 {
@@ -48,38 +48,55 @@ namespace WebsiteChangeDetector.Websites
 
             // wait for login to complete
             _logger.LogDebug("Wait for login to complete");
-            await Task.Delay(TimeSpan.FromSeconds(6));
+            await Task.Delay(TimeSpan.FromSeconds(3));
 
             // dismiss any popup
             _logger.LogDebug("Dismissing any popups");
             new Actions(_webDriver).SendKeys(Keys.Escape).Perform();
 
-            // wait for main to finish loading after any popups
-            _logger.LogDebug("Wait for landing page load to complete");
-            await Task.Delay(TimeSpan.FromSeconds(5));
-
             // click start report
-            var quickStartItems = _webDriver.FindElements(By.ClassName("cnqr-quicktask"));
+            var quickStartItems = _webDriver.FindSlowElements(By.ClassName("cnqr-quicktask"));
             var startReport = quickStartItems.First(x => x.Text.Contains("Start a Report"));
             startReport.Click();
 
-            // first page details
-            var businessPurposeInput = _webDriver.FindSlowElement(By.Id("Report_1207_TRAVELER_ISNEW_Purpose"));
-            businessPurposeInput.SendKeys("Work from home expense");
+            // enter report name
+            var reportNameInput = _webDriver.FindElement(By.Name("Report_1207_TRAVELER_ISNEW_Name"));
+            reportNameInput.SendKeys($"Home internet ({_options.ExpenseReportTransactionDate})");
 
-            var reportNameInput = _webDriver.FindElement(By.Id("Report_1207_TRAVELER_ISNEW_Name"));
-            reportNameInput.SendKeys("Work from home expense");
+            // enter business purpose
+            var businessPurposeInput = _webDriver.FindElement(By.Name("Report_1207_TRAVELER_ISNEW_Purpose"));
+            businessPurposeInput.SendKeys("Home internet");
 
             // click save
-            _webDriver.FindElement(By.ClassName(" x-btn-text menu_save")).Click();
-
-            // click new expense
-            _webDriver.FindSlowElement(By.ClassName(" x-btn-text menu_newexpense2")).Click();
+            _webDriver.FindElement(By.CssSelector(".x-btn-text.menu_save")).Click();
 
             // click "Internet (home)"
-            _webDriver.FindSlowElement(By.ClassName("etListSearchItem_3_0")).Click();
+            _webDriver.FindSlowElement(By.Id("etListSearchItem_2_0")).Click();
 
-            _logger.LogDebug("Done");
+            // enter transaction date
+            _webDriver.FindSlowElement(By.Id("Expense_1409_TRAVELER_P1054_ADJAMT_HD_TransactionDate"))
+                .SendKeys(_options.ExpenseReportTransactionDate);
+
+            // enter business purpose
+            _webDriver.FindElement(By.Id("Expense_1409_TRAVELER_P1054_ADJAMT_HD_Description"))
+                .SendKeys("Home Internet");
+
+            // enter vendor name
+            _webDriver.FindElement(By.Id("Expense_1409_TRAVELER_P1054_ADJAMT_HD_VendorDescription"))
+                .SendKeys("Cox");
+
+            // enter city of purchase
+            _webDriver.FindElement(By.Id("Expense_1409_TRAVELER_P1054_ADJAMT_HD_LocName"))
+                .SendKeys("San Diego, California");
+
+            // enter amount
+            _webDriver.FindElement(By.Id("Expense_1409_TRAVELER_P1054_ADJAMT_HD_TransactionAmount"))
+                .SendKeys("30");
+
+            // click attach receipt
+            _webDriver.FindElement(By.XPath("//button[text()='Attach Receipt']")).Click();
+
+            _logger.LogDebug("Please fill in the rest manually");
 
             // wait
             await Task.Delay(TimeSpan.FromMinutes(100));
