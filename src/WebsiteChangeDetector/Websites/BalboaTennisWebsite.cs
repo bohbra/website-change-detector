@@ -38,7 +38,7 @@ namespace WebsiteChangeDetector.Websites
                     new DateTime(2021, 4, 6),
                     new DateTime(2021, 4, 7),
                     new DateTime(2021, 4, 8),
-                    new DateTime(2021, 4, 10)
+                    new DateTime(2021, 4, 12)
                 },
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
