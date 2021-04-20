@@ -54,7 +54,7 @@ namespace WebsiteChangeDetector.Services
                         if (_options.PauseOnSuccess)
                         {
                             _logger.LogDebug("Pausing because check was successful");
-                            await Task.Delay(Timeout.Infinite);
+                            await Task.Delay(Timeout.Infinite, stoppingToken);
                         }
                     }
                 }
