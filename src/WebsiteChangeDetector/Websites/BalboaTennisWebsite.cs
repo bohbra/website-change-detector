@@ -44,6 +44,7 @@ namespace WebsiteChangeDetector.Websites
                 DateTime.Now.TimeOfDay < new TimeSpan(7, 30, 0))
             {
                 _logger.LogDebug("Search disabled for blackout hours");
+                _loginNeeded = true;
                 return new WebsiteResult(false);
             }
 
