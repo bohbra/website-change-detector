@@ -99,7 +99,7 @@ namespace WebsiteChangeDetector.Websites
 
         private async Task Login()
         {
-            _logger.LogDebug("Login started");
+            _logger.LogDebug($"{nameof(Login)} started");
             _webDriver.Navigate().GoToUrl(LoginUrl);
 
             // enter email
@@ -114,6 +114,8 @@ namespace WebsiteChangeDetector.Websites
             _webDriver.FindElement(By.Id("btnLogin")).Click();
 
             await Task.Delay(TimeSpan.FromSeconds(3));
+
+            _logger.LogDebug($"{nameof(Login)} ended");
         }
 
         private bool SelectDate(DateTime searchDate)
