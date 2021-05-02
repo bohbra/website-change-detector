@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using System;
@@ -104,6 +104,7 @@ namespace WebsiteChangeDetector.Websites
 
             // enter email
             var emailInput = _webDriver.FindElement(By.Id("txtUsername"));
+            emailInput.Clear();
             emailInput.SendKeys(_options.BalboaTennisEmail);
 
             // enter password
