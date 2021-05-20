@@ -20,7 +20,7 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="5.0.1" />
-    <PackageReference Include="Twilio" Version="5.59.0" />
+    <PackageReference Include="Twilio" Version="5.61.0" />
   </ItemGroup>
 
   <ItemGroup>
