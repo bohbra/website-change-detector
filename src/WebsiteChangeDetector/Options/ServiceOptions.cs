@@ -17,7 +17,7 @@ namespace WebsiteChangeDetector.Options
         public string SharpPassword { get; set; }
         public string BalboaTennisUser { get; set; }
         public string BalboaTennisPassword { get; set; }
-        public IEnumerable<DateTime> BalboaTennisSearchDates { get; set; }
+        public IEnumerable<DateTime> BalboaTennisBlackoutDates { get; set; }
         public string ExpenseReportEmail { get; set; }
         public string ExpenseReportPassword { get; set; }
         public string ExpenseReportTransactionDate { get; set; }

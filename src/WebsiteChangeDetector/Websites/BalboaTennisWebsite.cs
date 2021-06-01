@@ -31,7 +31,7 @@ namespace WebsiteChangeDetector.Websites
             _searchOptions = new BalboaSearch
             {
                 GuestName = "Alison",
-                Dates = _options.BalboaTennisSearchDates,
+                BlackoutDates = _options.BalboaTennisBlackoutDates,
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
                 Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
@@ -58,8 +58,14 @@ namespace WebsiteChangeDetector.Websites
             // refresh page to fix any memory leaks
             _webDriver.Navigate().Refresh();
 
+            // get all days one week from now
+            var searchDates = GetDateRange(DateTime.Now.Date, TimeSpan.FromDays(14)).Where(x => 
+                    x.DayOfWeek != DayOfWeek.Saturday && 
+                    x.DayOfWeek != DayOfWeek.Sunday && 
+                    _searchOptions.BlackoutDates.All(item => item != x));
+
             // check all days
-            foreach (var searchDate in _searchOptions.Dates)
+            foreach (var searchDate in searchDates)
             {
                 // time message
                 var timeMessage = $"{searchDate:MM/dd/yyyy} @ {_searchOptions.StartTime}";
@@ -274,12 +280,22 @@ namespace WebsiteChangeDetector.Websites
             new Actions(_webDriver).SendKeys(Keys.Escape).Perform();
             return true;
         }
+
+        private IEnumerable<DateTime> GetDateRange(DateTime startDate, TimeSpan offset)
+        {
+            var endDate = startDate.Add(offset);
+            while (startDate <= endDate)
+            {
+                yield return startDate;
+                startDate = startDate.AddDays(1);
+            }
+        }
     }
 
     public class BalboaSearch
     {
         public string GuestName { get; set; }
-        public IEnumerable<DateTime> Dates { get; set; }
+        public IEnumerable<DateTime> BlackoutDates { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
         public IEnumerable<int> Courts { get; set; }
