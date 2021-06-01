@@ -185,6 +185,15 @@ namespace WebsiteChangeDetector.Websites
             // get calendar table
             var tableElement = _webDriver.FindElement(By.Id("TT"));
 
+            // check for existing bookings
+            var allDivs = tableElement.FindElements(By.CssSelector("div"));
+            var bookings = allDivs.Where(x => x.Text == "My Booking");
+            if (bookings.Any())
+            {
+                _logger.LogDebug("Skipping, already have a booking for this day");
+                return false;
+            }
+
             // available start times
             var rowTimeStart = tableElement.FindElement(By.CssSelector($"tr[myTag='{_searchOptions.StartTime}']"));
             var openStartTimes = rowTimeStart.FindElements(By.ClassName("f"));
