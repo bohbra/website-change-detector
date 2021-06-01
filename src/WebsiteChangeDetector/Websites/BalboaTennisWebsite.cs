@@ -105,7 +105,7 @@ namespace WebsiteChangeDetector.Websites
             // enter email
             var emailInput = _webDriver.FindElement(By.Id("txtUsername"));
             emailInput.Clear();
-            emailInput.SendKeys(_options.BalboaTennisEmail);
+            emailInput.SendKeys(_options.BalboaTennisUser);
 
             // enter password
             var passwordInput = _webDriver.FindElement(By.Id("txtPassword"));

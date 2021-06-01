@@ -15,7 +15,7 @@ namespace WebsiteChangeDetector.Options
         public string TwilioToPhoneNumber { get; set; }
         public string SharpEmail { get; set; }
         public string SharpPassword { get; set; }
-        public string BalboaTennisEmail { get; set; }
+        public string BalboaTennisUser { get; set; }
         public string BalboaTennisPassword { get; set; }
         public IEnumerable<DateTime> BalboaTennisSearchDates { get; set; }
         public string ExpenseReportEmail { get; set; }
