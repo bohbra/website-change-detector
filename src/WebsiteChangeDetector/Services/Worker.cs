@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WebsiteChangeDetector.Common;
@@ -16,18 +17,18 @@ namespace WebsiteChangeDetector.Services
         private readonly ILogger<Worker> _logger;
         private readonly ServiceOptions _options;
         private readonly IEnumerable<IWebsite> _websites;
-        private readonly ITextClient _textClient;
+        private readonly IEmailClient _emailClient;
 
         public Worker(
             ILogger<Worker> logger, 
             IOptions<ServiceOptions> options, 
             IEnumerable<IWebsite> websites,
-            ITextClient textClient)
+            IEmailClient emailClient)
         {
             _logger = logger;
             _options = options.Value;
             _websites = websites;
-            _textClient = textClient;
+            _emailClient = emailClient;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -48,8 +49,8 @@ namespace WebsiteChangeDetector.Services
                         // log success message
                         _logger.LogDebug(result.Message);
 
-                        // send text
-                        _textClient.Send(result.Message);
+                        // send message
+                        await _emailClient.Send(result.Message);
 
                         if (_options.PauseOnSuccess)
                         {
@@ -61,7 +62,10 @@ namespace WebsiteChangeDetector.Services
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Error occurred executing website check");
-                    _textClient.Send($"Error occurred @ {DateTime.Now}");
+                    var errorMessage = new StringBuilder();
+                    errorMessage.AppendLine($"Error occurred @ {DateTime.Now}");
+                    errorMessage.AppendLine($"Exception: {e}");
+                    await _emailClient.Send(errorMessage.ToString());
                     throw;
                 }
                 

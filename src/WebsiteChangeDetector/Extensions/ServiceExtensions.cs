@@ -43,6 +43,8 @@ namespace WebsiteChangeDetector.Extensions
 
             // text client
             services.AddSingleton<ITextClient, TextClient>();
+            // email client
+            services.AddSingleton<IEmailClient, EmailClient>();
         }
     }
 }
