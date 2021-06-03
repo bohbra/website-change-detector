@@ -1,12 +1,13 @@
+using JsonFlatFileDataStore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using OpenQA.Selenium.Interactions;
 using WebsiteChangeDetector.Extensions;
 using WebsiteChangeDetector.Options;
 
@@ -18,6 +19,7 @@ namespace WebsiteChangeDetector.Websites
         private readonly IWebDriver _webDriver;
         private readonly ServiceOptions _options;
         private readonly BalboaSearch _searchOptions;
+        private readonly IDocumentCollection<BlackoutDate> _blackoutDatesCollection;
         private bool _loginNeeded = true;
 
         private const string LoginUrl = "https://balboatc.tennisbookings.com/loginx.aspx";
@@ -28,10 +30,19 @@ namespace WebsiteChangeDetector.Websites
             _webDriver = webDriver;
             _options = options.Value;
 
+            // initialize data store
+            var dataStore = new DataStore("balboa_tennis.json");
+            _blackoutDatesCollection = dataStore.GetCollection<BlackoutDate>();
+            var blackoutDates = _options.BalboaTennisBlackoutDates.Select(x => new BlackoutDate(x));
+            foreach (var blackoutDate in blackoutDates)
+            {
+                _blackoutDatesCollection.ReplaceOne(x => x.Date == blackoutDate.Date, blackoutDate, true);
+            }
+
+            // save search options
             _searchOptions = new BalboaSearch
             {
                 GuestName = "Alison",
-                BlackoutDates = _options.BalboaTennisBlackoutDates,
                 StartTime = "5:00pm",
                 EndTime = "5:30pm",
                 Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
@@ -61,8 +72,8 @@ namespace WebsiteChangeDetector.Websites
             // get all days one week from now
             var searchDates = GetDateRange(DateTime.Now.Date, TimeSpan.FromDays(14)).Where(x => 
                     x.DayOfWeek != DayOfWeek.Saturday && 
-                    x.DayOfWeek != DayOfWeek.Sunday && 
-                    _searchOptions.BlackoutDates.All(item => item != x));
+                    x.DayOfWeek != DayOfWeek.Sunday &&
+                    _blackoutDatesCollection.AsQueryable().All(item => item.Date != x));
 
             // check all days
             foreach (var searchDate in searchDates)
@@ -93,8 +104,11 @@ namespace WebsiteChangeDetector.Websites
 
                 // book time
                 var success = BookTime(_searchOptions.GuestName);
-                if (success) 
+                if (success)
+                {
+                    await _blackoutDatesCollection.ReplaceOneAsync(x => x.Date == searchDate, new BlackoutDate(searchDate), true);
                     return new WebsiteResult(true, $"Booked reservation for {timeMessage}");
+                }
 
                 _logger.LogDebug($"Couldn't find time for {timeMessage}");
             }
@@ -129,7 +143,15 @@ namespace WebsiteChangeDetector.Websites
         {
             // switch to schedules frame
             _webDriver.SwitchTo().DefaultContent();
-            _webDriver.SwitchTo().Frame("ifMain");
+            try
+            {
+                _webDriver.SwitchTo().Frame("ifMain");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Frame ifMain doesn't exist", e);
+                return false;
+            }
 
             // select the month
             var prevMonthLink = _webDriver.FindElement(By.CssSelector("a[title='Go to the previous month']"));
@@ -295,7 +317,7 @@ namespace WebsiteChangeDetector.Websites
             var endDate = startDate.Add(offset);
             while (startDate <= endDate)
             {
-                yield return startDate;
+                yield return startDate.Date;
                 startDate = startDate.AddDays(1);
             }
         }
@@ -304,9 +326,19 @@ namespace WebsiteChangeDetector.Websites
     public class BalboaSearch
     {
         public string GuestName { get; set; }
-        public IEnumerable<DateTime> BlackoutDates { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
         public IEnumerable<int> Courts { get; set; }
     }
+
+    public class BlackoutDate
+    {
+        public BlackoutDate(DateTime date)
+        {
+            Date = date;
+        }
+
+        public DateTime Date { get; set; }
+    }
+
 }
