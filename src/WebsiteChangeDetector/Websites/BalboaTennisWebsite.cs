@@ -333,6 +333,11 @@ namespace WebsiteChangeDetector.Websites
 
     public class BlackoutDate
     {
+        public BlackoutDate()
+        {
+            
+        }
+
         public BlackoutDate(DateTime date)
         {
             Date = date;
