@@ -251,8 +251,8 @@ namespace WebsiteChangeDetector.Websites
                 if (matchingEndTime != null)
                 {
                     // select both times
-                    startWebElement.Click();
-                    matchingEndTime.Click();
+                    new Actions(_webDriver).Click(startWebElement).Perform();
+                    new Actions(_webDriver).Click(matchingEndTime).Perform();
                     return true;
                 }
             }
