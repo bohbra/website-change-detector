@@ -41,8 +41,6 @@ namespace WebsiteChangeDetector.Extensions
             services.AddScoped<IWebsite, BalboaTennisWebsite>();
             //services.AddScoped<IWebsite, ExpenseReportWebsite>();
 
-            // text client
-            services.AddSingleton<ITextClient, TextClient>();
             // email client
             services.AddSingleton<IEmailClient, EmailClient>();
         }
