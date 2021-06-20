@@ -69,4 +69,7 @@
     <Build Include="Schemas\BalboaTennisClub\Tables\BlackoutDates.sql" />
     <Build Include="Database\Schemas\BalboaTennisClub.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="WebsiteChangeDetector.Database.publish.xml" />
+  </ItemGroup>
 </Project>
