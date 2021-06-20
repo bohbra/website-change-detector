@@ -6,9 +6,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using WebsiteChangeDetector.Extensions;
-using WebsiteChangeDetector.Options;
 using WindowsInput;
 using WindowsInput.Native;
+using WebsiteChangeDetector.Options;
 
 namespace WebsiteChangeDetector.Websites
 {
@@ -16,10 +16,10 @@ namespace WebsiteChangeDetector.Websites
     {
         private readonly ILogger<ExpenseReportWebsite> _logger;
         private readonly IWebDriver _webDriver;
-        private readonly ServiceOptions _options;
+        private readonly WebsiteChangeDetectorOptions _options;
         private readonly IKeyboardSimulator _keyboard;
 
-        public ExpenseReportWebsite(ILogger<ExpenseReportWebsite> logger, IWebDriver webDriver, IOptions<ServiceOptions> options)
+        public ExpenseReportWebsite(ILogger<ExpenseReportWebsite> logger, IWebDriver webDriver, IOptions<WebsiteChangeDetectorOptions> options)
         {
             _logger = logger;
             _webDriver = webDriver;
@@ -56,7 +56,7 @@ namespace WebsiteChangeDetector.Websites
 
             // click start report
             var quickStartItems = _webDriver.FindSlowElements(By.ClassName("cnqr-quicktask"));
-            var startReport = quickStartItems.First(x => x.Text.Contains("Start a Report"));
+            var startReport = quickStartItems.First(x => x.Text.Contains("Scan a Report"));
             startReport.Click();
 
             // enter report name

@@ -1,8 +1,8 @@
-﻿using Serilog.Core;
+﻿using System.Linq;
+using Serilog.Core;
 using Serilog.Events;
-using System.Linq;
 
-namespace WebsiteChangeDetector.Common
+namespace WebsiteChangeDetector.Console.Logging
 {
     internal class ClassNameEnricher : ILogEventEnricher
     {

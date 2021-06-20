@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WebsiteChangeDetector.Options
 {
-    public class ServiceOptions
+    public class WebsiteChangeDetectorOptions
     {
         public bool Headless { get; set; }
         public int PollDelayInSeconds { get; set; }

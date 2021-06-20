@@ -13,12 +13,12 @@ namespace WebsiteChangeDetector.Websites
     {
         private readonly ILogger<SharpWebsite> _logger;
         private readonly IWebDriver _webDriver;
-        private readonly ServiceOptions _options;
+        private readonly WebsiteChangeDetectorOptions _options;
         private readonly List<string> _urls = new();
 
         private bool _loginNeeded = false;
 
-        public SharpWebsite(ILogger<SharpWebsite> logger, IWebDriver webDriver, IOptions<ServiceOptions> options)
+        public SharpWebsite(ILogger<SharpWebsite> logger, IWebDriver webDriver, IOptions<WebsiteChangeDetectorOptions> options)
         {
             _logger = logger;
             _webDriver = webDriver;

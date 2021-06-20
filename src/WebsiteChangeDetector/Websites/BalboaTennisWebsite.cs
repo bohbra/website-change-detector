@@ -17,14 +17,14 @@ namespace WebsiteChangeDetector.Websites
     {
         private readonly ILogger<BalboaTennisWebsite> _logger;
         private readonly IWebDriver _webDriver;
-        private readonly ServiceOptions _options;
+        private readonly WebsiteChangeDetectorOptions _options;
         private readonly BalboaSearch _searchOptions;
         private readonly IDocumentCollection<BlackoutDate> _blackoutDatesCollection;
         private bool _loginNeeded = true;
 
         private const string LoginUrl = "https://balboatc.tennisbookings.com/loginx.aspx";
 
-        public BalboaTennisWebsite(ILogger<BalboaTennisWebsite> logger, IWebDriver webDriver, IOptions<ServiceOptions> options)
+        public BalboaTennisWebsite(ILogger<BalboaTennisWebsite> logger, IWebDriver webDriver, IOptions<WebsiteChangeDetectorOptions> options)
         {
             _logger = logger;
             _webDriver = webDriver;

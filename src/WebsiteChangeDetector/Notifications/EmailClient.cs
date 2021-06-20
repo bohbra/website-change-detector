@@ -1,16 +1,16 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System.Threading.Tasks;
 using WebsiteChangeDetector.Options;
 
-namespace WebsiteChangeDetector.Common
+namespace WebsiteChangeDetector.Notifications
 {
     public class EmailClient : IEmailClient
     {
         private readonly SendGridClient _client;
 
-        public EmailClient(IOptions<ServiceOptions> options)
+        public EmailClient(IOptions<WebsiteChangeDetectorOptions> options)
         {
             _client = new SendGridClient(options.Value.SendGridApiKey);
         }
