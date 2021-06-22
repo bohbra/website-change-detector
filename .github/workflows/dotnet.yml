@@ -24,7 +24,7 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Build
-      run: msbuild /p:Configuration=Release /t:Restore;Build
+      run: msbuild /p:Configuration=Release /t:Restore /t:Build
     - name: Publish
       run: dotnet publish -c Release -o "${{ github.workspace }}/publish"
     - name: Upload artifacts
