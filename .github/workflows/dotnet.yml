@@ -31,4 +31,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: WebsiteChangeDetector
-        path: ${{ github.workspace }}/publish
+        path: |
+          ${{ github.workspace }}/publish
+          ${{ github.workspace }}/WebsiteChangeDetector.Database/bin/Release/WebsiteChangeDetector.Database.dacpac
