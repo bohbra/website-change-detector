@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using WebsiteChangeDetector.Websites;
 
 namespace WebsiteChangeDetector.Options
 {
@@ -14,6 +15,7 @@ namespace WebsiteChangeDetector.Options
         public string TwilioFromPhoneNumber { get; set; }
         public string TwilioToPhoneNumber { get; set; }
         public string SendGridApiKey { get; set; }
+        public WebsiteName WebsiteName { get; set; }
         public string SharpEmail { get; set; }
         public string SharpPassword { get; set; }
         public string BalboaTennisUser { get; set; }

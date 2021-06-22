@@ -1,12 +1,11 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Serilog;
+using System;
+using System.Threading.Tasks;
 using WebsiteChangeDetector.Console.Logging;
 using WebsiteChangeDetector.Console.Options;
 using WebsiteChangeDetector.Console.Services;
@@ -35,10 +34,12 @@ namespace WebsiteChangeDetector.Console
                     services.Configure<ServiceOptions>(context.Configuration.GetSection(nameof(ServiceOptions)));
                     services.Configure<WebsiteChangeDetectorOptions>(context.Configuration.GetSection(nameof(WebsiteChangeDetectorOptions)));
 
+                    // options
+                    var options = context.Configuration.GetSection(nameof(WebsiteChangeDetectorOptions)).Get<WebsiteChangeDetectorOptions>();
+
                     // web driver
                     services.AddSingleton<IWebDriver>(provider =>
                     {
-                        var options = provider.GetRequiredService<IOptions<WebsiteChangeDetectorOptions>>().Value;
                         var chromeOptions = new ChromeOptions();
                         chromeOptions.AddArgument("--window-size=1024,768");
                         chromeOptions.AddArgument("--disable-logging");
@@ -56,10 +57,21 @@ namespace WebsiteChangeDetector.Console
                     services.AddSingleton<IWebsiteChangeDetector, WebsiteChangeDetector>();
 
                     // websites
-                    //services.AddScoped<IWebsite, PetcoWebsite>();
-                    //services.AddScoped<IWebsite, SharpWebsite>();
-                    services.AddScoped<IWebsite, BalboaTennisWebsite>();
-                    //services.AddScoped<IWebsite, ExpenseReportWebsite>();
+                    switch (options.WebsiteName)
+                    {
+                        case WebsiteName.Balboa:
+                            services.AddScoped<IWebsite, BalboaTennisWebsite>();
+                            break;
+                        case WebsiteName.Petco:
+                            services.AddScoped<IWebsite, PetcoWebsite>();
+                            break;
+                        case WebsiteName.Sharp:
+                            services.AddScoped<IWebsite, SharpWebsite>();
+                            break;
+                        case WebsiteName.Expense:
+                            services.AddScoped<IWebsite, ExpenseReportWebsite>();
+                            break;
+                    }
                 })
                 .UseSerilog((context, configureLogger) =>
                 {
