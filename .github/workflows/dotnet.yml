@@ -26,7 +26,7 @@ jobs:
     - name: Build
       run: msbuild /p:Configuration=Release /t:Restore /t:Build
     - name: Publish
-      run: dotnet publish -c Release -o "${{ github.workspace }}/publish"
+      run: dotnet publish WebsiteChangeDetector.Console -c Release -o "${{ github.workspace }}/publish"
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
