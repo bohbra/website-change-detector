@@ -42,9 +42,9 @@ namespace WebsiteChangeDetector.Websites
             // save search options
             _searchOptions = new BalboaSearch
             {
-                GuestName = "Alison",
-                StartTime = "5:00pm",
-                EndTime = "5:30pm",
+                GuestName = _options.BalboaTennisGuestName,
+                StartTime = _options.BalboaTennisStartTime.ToString("h:mm") + "pm",
+                EndTime = _options.BalboaTennisStartTime.AddMinutes(_options.BalboaTennisLengthInMinutes).ToString("h:mm") + "pm",
                 Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
             };
         }
@@ -70,7 +70,7 @@ namespace WebsiteChangeDetector.Websites
             _webDriver.Navigate().Refresh();
 
             // get all days one week from now
-            var searchDates = GetDateRange(DateTime.Now.Date, TimeSpan.FromDays(14)).Where(x => 
+            var searchDates = GetDateRange(DateTime.Now.Date, TimeSpan.FromDays(_options.BalboaTennisNumberOfDays)).Where(x => 
                     x.DayOfWeek != DayOfWeek.Saturday && 
                     x.DayOfWeek != DayOfWeek.Sunday &&
                     _blackoutDatesCollection.AsQueryable().All(item => item.Date != x));
