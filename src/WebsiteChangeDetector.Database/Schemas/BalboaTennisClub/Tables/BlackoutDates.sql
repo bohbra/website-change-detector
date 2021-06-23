@@ -1,4 +1,5 @@
 ﻿CREATE TABLE [BalboaTennisClub].[BlackoutDates]
 (
-	[Date] DATETIME2 NOT NULL 
+	[BlackoutDateTime] DATETIME2 NOT NULL, 
+    [LastModifiedDateTime] DATETIME2 NOT NULL DEFAULT (sysdatetime()) 
 )
