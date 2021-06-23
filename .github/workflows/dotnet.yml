@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     defaults:
       run:
@@ -17,18 +17,20 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
     - name: Build
-      run: dotnet build -c Release --no-restore 
+      run: msbuild /p:Configuration=Release /t:Restore /t:Build
     - name: Publish
-      run: dotnet publish -c Release -o "${{ github.workspace }}/publish"
+      run: dotnet publish WebsiteChangeDetector.Console -c Release -o "${{ github.workspace }}/publish"
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: WebsiteChangeDetector
-        path: ${{ github.workspace }}/publish
+        path: |
+          ${{ github.workspace }}/publish
+          ${{ github.workspace }}/WebsiteChangeDetector.Database/bin/Release/WebsiteChangeDetector.Database.dacpac

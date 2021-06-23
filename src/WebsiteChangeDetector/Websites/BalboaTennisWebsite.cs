@@ -1,4 +1,3 @@
-using JsonFlatFileDataStore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
@@ -10,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WebsiteChangeDetector.Extensions;
 using WebsiteChangeDetector.Options;
+using WebsiteChangeDetector.Services;
 
 namespace WebsiteChangeDetector.Websites
 {
@@ -17,27 +17,24 @@ namespace WebsiteChangeDetector.Websites
     {
         private readonly ILogger<BalboaTennisWebsite> _logger;
         private readonly IWebDriver _webDriver;
+        private readonly IBalboaTennisService _service;
         private readonly WebsiteChangeDetectorOptions _options;
         private readonly BalboaSearch _searchOptions;
-        private readonly IDocumentCollection<BlackoutDate> _blackoutDatesCollection;
         private bool _loginNeeded = true;
+        private IEnumerable<BlackoutDate> _blackoutDates;
 
         private const string LoginUrl = "https://balboatc.tennisbookings.com/loginx.aspx";
 
-        public BalboaTennisWebsite(ILogger<BalboaTennisWebsite> logger, IWebDriver webDriver, IOptions<WebsiteChangeDetectorOptions> options)
+        public BalboaTennisWebsite(
+            ILogger<BalboaTennisWebsite> logger, 
+            IWebDriver webDriver, 
+            IOptions<WebsiteChangeDetectorOptions> options,
+            IBalboaTennisService service)
         {
             _logger = logger;
             _webDriver = webDriver;
+            _service = service;
             _options = options.Value;
-
-            // initialize data store
-            var dataStore = new DataStore("balboa_tennis.json");
-            _blackoutDatesCollection = dataStore.GetCollection<BlackoutDate>();
-            var blackoutDates = _options.BalboaTennisBlackoutDates.Select(x => new BlackoutDate(x));
-            foreach (var blackoutDate in blackoutDates)
-            {
-                _blackoutDatesCollection.ReplaceOne(x => x.Date == blackoutDate.Date, blackoutDate, true);
-            }
 
             // save search options
             _searchOptions = new BalboaSearch
@@ -69,11 +66,18 @@ namespace WebsiteChangeDetector.Websites
             // refresh page to fix any memory leaks
             _webDriver.Navigate().Refresh();
 
+            // get blackout dates
+            if (_blackoutDates == null)
+            {
+                _logger.LogDebug("Getting all blackout dates");
+                _blackoutDates = await _service.GetAllBlackoutDatesAsync();
+            }
+
             // get all days one week from now
             var searchDates = GetDateRange(DateTime.Now.Date, TimeSpan.FromDays(_options.BalboaTennisNumberOfDays)).Where(x => 
                     x.DayOfWeek != DayOfWeek.Saturday && 
                     x.DayOfWeek != DayOfWeek.Sunday &&
-                    _blackoutDatesCollection.AsQueryable().All(item => item.Date != x));
+                    _blackoutDates.All(item => item.Date != x));
 
             // check all days
             foreach (var searchDate in searchDates)
@@ -106,7 +110,7 @@ namespace WebsiteChangeDetector.Websites
                 var success = BookTime(_searchOptions.GuestName);
                 if (success)
                 {
-                    await _blackoutDatesCollection.ReplaceOneAsync(x => x.Date == searchDate, new BlackoutDate(searchDate), true);
+                    await _service.AddBlackoutDateAsync(new BlackoutDate(searchDate));
                     return new WebsiteResult(true, $"Booked reservation for {timeMessage}");
                 }
 
@@ -330,20 +334,4 @@ namespace WebsiteChangeDetector.Websites
         public string EndTime { get; set; }
         public IEnumerable<int> Courts { get; set; }
     }
-
-    public class BlackoutDate
-    {
-        public BlackoutDate()
-        {
-            
-        }
-
-        public BlackoutDate(DateTime date)
-        {
-            Date = date;
-        }
-
-        public DateTime Date { get; set; }
-    }
-
 }
