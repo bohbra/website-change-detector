@@ -11,6 +11,7 @@ using WebsiteChangeDetector.Console.Options;
 using WebsiteChangeDetector.Console.Services;
 using WebsiteChangeDetector.Notifications;
 using WebsiteChangeDetector.Options;
+using WebsiteChangeDetector.Services;
 using WebsiteChangeDetector.Websites;
 
 namespace WebsiteChangeDetector.Console
@@ -72,6 +73,11 @@ namespace WebsiteChangeDetector.Console
                             services.AddScoped<IWebsite, ExpenseReportWebsite>();
                             break;
                     }
+
+                    // website services
+                    var connectionString = context.Configuration.GetConnectionString("DefaultConnection");
+                    services.AddScoped<IBalboaTennisService>(_ => new BalboaTennisService(connectionString));
+
                 })
                 .UseSerilog((context, configureLogger) =>
                 {
