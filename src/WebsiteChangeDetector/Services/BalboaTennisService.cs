@@ -28,7 +28,7 @@ namespace WebsiteChangeDetector.Services
             await using var connection = new SqlConnection(_connectionString);
             const string sql = "INSERT INTO [BalboaTennisClub].[BlackoutDates] (BlackoutDateTime) VALUES (@BlackoutDateTime)";
             var parameters = new DynamicParameters();
-            parameters.Add("BlackoutDateTime", entity.Date, DbType.DateTime2);
+            parameters.Add("BlackoutDateTime", entity.BlackoutDateTime, DbType.DateTime2);
             return await connection.ExecuteAsync(sql, parameters);
         }
     }

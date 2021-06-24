@@ -56,6 +56,31 @@ namespace WebsiteChangeDetector.Websites
                 return new WebsiteResult(false);
             }
 
+            // get blackout dates
+            if (_blackoutDates == null)
+            {
+                _logger.LogDebug("Getting all blackout dates");
+                _blackoutDates = await _service.GetAllBlackoutDatesAsync();
+
+                // sync config blackout dates with persisted ones
+                var persistedBlackoutDates = _blackoutDates.Select(x => x.BlackoutDateTime);
+                var configBlackOutDates = _options.BalboaTennisBlackoutDates;
+                var newBlackOutDates = configBlackOutDates
+                    .Except(persistedBlackoutDates)
+                    .Select(x => new BlackoutDate(x))
+                    .ToList();
+
+                // add new blackout dates
+                foreach (var newBlackOutDate in newBlackOutDates)
+                {
+                    _logger.LogDebug($"Adding new blackout date: {newBlackOutDate.BlackoutDateTime}");
+                    await _service.AddBlackoutDateAsync(newBlackOutDate);
+                }
+
+                // update blackout dates
+                _blackoutDates = _blackoutDates.Union(newBlackOutDates);
+            }
+
             // login if needed
             if (_loginNeeded)
             {
@@ -66,18 +91,11 @@ namespace WebsiteChangeDetector.Websites
             // refresh page to fix any memory leaks
             _webDriver.Navigate().Refresh();
 
-            // get blackout dates
-            if (_blackoutDates == null)
-            {
-                _logger.LogDebug("Getting all blackout dates");
-                _blackoutDates = await _service.GetAllBlackoutDatesAsync();
-            }
-
             // get all days one week from now
             var searchDates = GetDateRange(DateTime.Now.Date, TimeSpan.FromDays(_options.BalboaTennisNumberOfDays)).Where(x => 
                     x.DayOfWeek != DayOfWeek.Saturday && 
                     x.DayOfWeek != DayOfWeek.Sunday &&
-                    _blackoutDates.All(item => item.Date != x));
+                    _blackoutDates.All(item => item.BlackoutDateTime != x));
 
             // check all days
             foreach (var searchDate in searchDates)

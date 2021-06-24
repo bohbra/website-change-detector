@@ -9,11 +9,11 @@ namespace WebsiteChangeDetector.Services
 
         }
 
-        public BlackoutDate(DateTime date)
+        public BlackoutDate(DateTime blackoutDateTime)
         {
-            Date = date;
+            BlackoutDateTime = blackoutDateTime;
         }
 
-        public DateTime Date { get; set; }
+        public DateTime BlackoutDateTime { get; set; }
     }
 }
