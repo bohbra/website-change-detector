@@ -15,5 +15,7 @@ namespace WebsiteChangeDetector.Services
         }
 
         public DateTime BlackoutDateTime { get; set; }
+
+        public bool Reservation { get; set; }
     }
 }
