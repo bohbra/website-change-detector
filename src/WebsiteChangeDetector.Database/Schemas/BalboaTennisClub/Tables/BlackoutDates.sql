@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [BalboaTennisClub].[BlackoutDates]
 (
 	[BlackoutDateTime] DATETIME2 NOT NULL, 
-    [LastModifiedDateTime] DATETIME2 NOT NULL DEFAULT (sysdatetime()), 
-    [Reservation] BIT NOT NULL DEFAULT 0 
+    [Reservation] BIT NOT NULL DEFAULT 0, 
+    [LastModifiedDateTime] DATETIME2 NOT NULL DEFAULT (sysdatetime())
 )

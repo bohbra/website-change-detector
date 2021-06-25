@@ -67,7 +67,7 @@ namespace WebsiteChangeDetector.Websites
                 var configBlackOutDates = _options.BalboaTennisBlackoutDates;
                 var newBlackOutDates = configBlackOutDates
                     .Except(persistedBlackoutDates)
-                    .Select(x => new BlackoutDate(x))
+                    .Select(x => new BlackoutDate(x, false))
                     .ToList();
 
                 // add new blackout dates
@@ -128,7 +128,7 @@ namespace WebsiteChangeDetector.Websites
                 var success = BookTime(_searchOptions.GuestName);
                 if (success)
                 {
-                    await _service.AddBlackoutDateAsync(new BlackoutDate(searchDate));
+                    await _service.AddBlackoutDateAsync(new BlackoutDate(searchDate, true));
                     return new WebsiteResult(true, $"Booked reservation for {timeMessage}");
                 }
 

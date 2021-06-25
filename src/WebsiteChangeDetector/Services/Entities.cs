@@ -9,9 +9,10 @@ namespace WebsiteChangeDetector.Services
 
         }
 
-        public BlackoutDate(DateTime blackoutDateTime)
+        public BlackoutDate(DateTime blackoutDateTime, bool reservation)
         {
             BlackoutDateTime = blackoutDateTime;
+            Reservation = reservation;
         }
 
         public DateTime BlackoutDateTime { get; set; }

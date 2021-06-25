@@ -26,9 +26,10 @@ namespace WebsiteChangeDetector.Services
         public async Task<int> AddBlackoutDateAsync(BlackoutDate entity)
         {
             await using var connection = new SqlConnection(_connectionString);
-            const string sql = "INSERT INTO [BalboaTennisClub].[BlackoutDates] (BlackoutDateTime) VALUES (@BlackoutDateTime)";
+            const string sql = "INSERT INTO [BalboaTennisClub].[BlackoutDates] (BlackoutDateTime, Reservation) VALUES (@BlackoutDateTime, @Reservation)";
             var parameters = new DynamicParameters();
             parameters.Add("BlackoutDateTime", entity.BlackoutDateTime, DbType.DateTime2);
+            parameters.Add("Reservation", entity.Reservation, DbType.Boolean);
             return await connection.ExecuteAsync(sql, parameters);
         }
     }
