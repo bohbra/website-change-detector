@@ -37,13 +37,12 @@ namespace WebsiteChangeDetector.Websites
             _options = options.Value;
 
             // save search options
-            _searchOptions = new BalboaSearch
-            {
-                GuestName = _options.BalboaTennisGuestName,
-                StartTime = _options.BalboaTennisStartTime.ToString("h:mm") + "pm",
-                EndTime = _options.BalboaTennisStartTime.AddMinutes(_options.BalboaTennisLengthInMinutes).ToString("h:mm") + "pm",
-                Courts = new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
-            };
+            _searchOptions = new BalboaSearch(
+                _options.BalboaTennisGuestName,
+                _options.BalboaTennisStartTime.ToString("h:mm") + "pm",
+                _options.BalboaTennisStartTime.AddMinutes(_options.BalboaTennisLengthInMinutes).ToString("h:mm") + "pm",
+                new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
+            );
         }
 
         public async Task<WebsiteResult> Check()
@@ -91,11 +90,18 @@ namespace WebsiteChangeDetector.Websites
             // refresh page to fix any memory leaks
             _webDriver.Navigate().Refresh();
 
-            // get all days one week from now
+            // get all days based on number of days from now
             var searchDates = GetDateRange(DateTime.Now.Date, TimeSpan.FromDays(_options.BalboaTennisNumberOfDays)).Where(x => 
                     x.DayOfWeek != DayOfWeek.Saturday && 
                     x.DayOfWeek != DayOfWeek.Sunday &&
                     _blackoutDates.All(item => item.BlackoutDateTime != x));
+
+            // log all search dates
+            _logger.LogDebug("Starting search for these dates:");
+            foreach (var searchDate in searchDates)
+            {
+                _logger.LogDebug($" {searchDate:MM/dd/yyyy}");
+            }
 
             // check all days
             foreach (var searchDate in searchDates)
@@ -241,42 +247,50 @@ namespace WebsiteChangeDetector.Websites
             // available start times
             var rowTimeStart = tableElement.FindElement(By.CssSelector($"tr[myTag='{_searchOptions.StartTime}']"));
             var openStartTimes = rowTimeStart.FindElements(By.ClassName("f"));
-            var openStartTimesByCourt = openStartTimes.Where(x => _searchOptions.Courts.Contains(CalculateCourtNumber(x))).ToList();
+            var openStartTimeSlots = openStartTimes
+                .Select(x => new BalboaTimeSlot(x, CalculateCourtNumber(x)))
+                .Where(x => _searchOptions.Courts.Contains(x.CourtNumber))
+                .ToList();
 
             // available end times
             var rowTimeEnd = tableElement.FindElement(By.CssSelector($"tr[myTag='{_searchOptions.EndTime}']"));
             var openEndTimes = rowTimeEnd.FindElements(By.ClassName("f"));
-            var openEndTimesByCourt = openEndTimes.Where(x => _searchOptions.Courts.Contains(CalculateCourtNumber(x))).ToList();
+            var openEndTimeSlots = openEndTimes
+                .Select(x => new BalboaTimeSlot(x, CalculateCourtNumber(x)))
+                .Where(x => _searchOptions.Courts.Contains(x.CourtNumber))
+                .ToList();
 
             // if there are no openings, stop
-            if (!openStartTimesByCourt.Any() || !openEndTimesByCourt.Any())
+            if (!openStartTimeSlots.Any() || !openEndTimeSlots.Any())
                 return false;
 
             // find column match
-            foreach (var startWebElement in openStartTimesByCourt)
+            foreach (var startTime in openStartTimeSlots)
             {
-                if (!startWebElement.Displayed || !startWebElement.Enabled)
+                if (!startTime.WebElement.Displayed || !startTime.WebElement.Enabled)
                 {
                     _logger.LogTrace("Can't select time because element is either disabled or not displayed");
                     continue;
                 }
 
                 // r19c7
-                var startId = startWebElement.GetAttribute("id");
+                var startId = startTime.WebElement.GetAttribute("id");
                 var columnSplit = startId.Split("c");
                 var startRow = Convert.ToInt32(columnSplit.First().Substring(1));
                 var startColumn = columnSplit.Last();
 
                 // check if end column exists
                 var searchId = $"r{startRow + 1}c{startColumn}";
-                var matchingEndTime = openEndTimesByCourt.FirstOrDefault(x => x.GetAttribute("id") == searchId);
-                if (matchingEndTime != null)
-                {
-                    // select both times
-                    new Actions(_webDriver).Click(startWebElement).Perform();
-                    new Actions(_webDriver).Click(matchingEndTime).Perform();
-                    return true;
-                }
+                var matchingEndTime = openEndTimeSlots.FirstOrDefault(x => x.WebElement.GetAttribute("id") == searchId);
+                if (matchingEndTime == null) 
+                    continue;
+
+                _logger.LogDebug("Found available start and end times");
+                _logger.LogDebug($"Clicking {_searchOptions.StartTime} for court {startTime.CourtNumber}");
+                new Actions(_webDriver).Click(startTime.WebElement).Perform();
+                _logger.LogDebug($"Clicking {_searchOptions.EndTime} for court {startTime.CourtNumber}");
+                new Actions(_webDriver).Click(matchingEndTime.WebElement).Perform();
+                return true;
             }
 
             return false;
@@ -345,11 +359,7 @@ namespace WebsiteChangeDetector.Websites
         }
     }
 
-    public class BalboaSearch
-    {
-        public string GuestName { get; set; }
-        public string StartTime { get; set; }
-        public string EndTime { get; set; }
-        public IEnumerable<int> Courts { get; set; }
-    }
+    public record BalboaSearch(string GuestName, string StartTime, string EndTime, IEnumerable<int> Courts);
+
+    public record BalboaTimeSlot(IWebElement WebElement, int CourtNumber);
 }
