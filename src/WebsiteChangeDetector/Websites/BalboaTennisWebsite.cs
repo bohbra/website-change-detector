@@ -72,7 +72,7 @@ namespace WebsiteChangeDetector.Websites
                 // add new blackout dates
                 foreach (var newBlackOutDate in newBlackOutDates)
                 {
-                    _logger.LogDebug($"Adding new blackout date: {newBlackOutDate.BlackoutDateTime}");
+                    _logger.LogDebug($"Adding new blackout date: {newBlackOutDate.BlackoutDateTime:MM/dd/yyyy}");
                     await _service.AddBlackoutDateAsync(newBlackOutDate);
                 }
 
@@ -123,7 +123,7 @@ namespace WebsiteChangeDetector.Websites
                     return new WebsiteResult(false);
 
                 // select time
-                var foundTime = SelectTime();
+                var foundTime = await SelectTime();
                 if (!foundTime)
                 {
                     _logger.LogDebug($"Couldn't find time for {timeMessage}");
@@ -227,7 +227,7 @@ namespace WebsiteChangeDetector.Websites
             return true;
         }
 
-        private bool SelectTime()
+        private async Task<bool> SelectTime()
         {
             // switch to calendar frame
             _webDriver.SwitchTo().Frame("mygridframe");
@@ -286,10 +286,16 @@ namespace WebsiteChangeDetector.Websites
                     continue;
 
                 _logger.LogDebug("Found available start and end times");
+
+                // scroll element into view
+                _logger.LogDebug("Scrolling start time element into view");
+                ((IJavaScriptExecutor)_webDriver).ExecuteScript("arguments[0].scrollIntoView(true);", startTime.WebElement);
+                await Task.Delay(1000);
+
                 _logger.LogDebug($"Clicking {_searchOptions.StartTime} for court {startTime.CourtNumber}");
-                new Actions(_webDriver).Click(startTime.WebElement).Perform();
+                startTime.WebElement.Click();
                 _logger.LogDebug($"Clicking {_searchOptions.EndTime} for court {startTime.CourtNumber}");
-                new Actions(_webDriver).Click(matchingEndTime.WebElement).Perform();
+                matchingEndTime.WebElement.Click();
                 return true;
             }
 
@@ -334,6 +340,10 @@ namespace WebsiteChangeDetector.Websites
             // check if alert dialog occurred after selecting book
             if (DetectAlertDialog())
                 return false;
+
+            // click email booking
+            _webDriver.FindElement(By.Id("btnEmail")).Click();
+            _webDriver.FindElement(By.Id("btnSendEmail")).Click();
 
             return true;
         }
