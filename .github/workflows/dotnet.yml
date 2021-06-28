@@ -7,8 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-
+  build-and-deploy:
     runs-on: windows-latest
     
     defaults:
@@ -16,21 +15,37 @@ jobs:
         working-directory: src
     
     steps:
+    - name: Checkout
     - uses: actions/checkout@v2
+    
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
+      
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+        
     - name: Build
       run: msbuild /p:Configuration=Release /t:Restore /t:Build
+      
     - name: Publish
-      run: dotnet publish WebsiteChangeDetector.Console -c Release -o "${{ github.workspace }}/publish"
+      run: dotnet publish WebsiteChangeDetector.Console -c Release -o "${{ github.workspace }}/app"
+      
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
+      if: ${{ github.ref == 'refs/heads/main' }}
       with:
         name: WebsiteChangeDetector
         path: |
-          ${{ github.workspace }}/publish
+          ${{ github.workspace }}/app
           ${{ github.workspace }}/WebsiteChangeDetector.Database/bin/Release/WebsiteChangeDetector.Database.dacpac
+          
+    - name: Deploy azure web app
+      uses: azure/webapps-deploy@v2
+      if: ${{ github.ref == 'refs/heads/main' }}
+      with:
+        app-name: app-website-change-detector-prod
+        slot-name: Production
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_120EBA224E4546E19D38437CC7EC8EA5 }}
+        package: "${{ github.workspace }}/app"
