@@ -87,6 +87,10 @@ namespace WebsiteChangeDetector.Websites
                 await Login();
             }
 
+            // clear any dialogs
+            new Actions(_webDriver).SendKeys(Keys.Enter).Perform();
+            new Actions(_webDriver).SendKeys(Keys.Escape).Perform();
+
             // refresh page to fix any memory leaks
             _webDriver.Navigate().Refresh();
 
