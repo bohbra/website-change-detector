@@ -41,7 +41,7 @@ namespace WebsiteChangeDetector.Websites
                 _options.BalboaTennisGuestName,
                 _options.BalboaTennisStartTime.ToString("h:mm") + "pm",
                 _options.BalboaTennisStartTime.AddMinutes(_options.BalboaTennisLengthInMinutes).ToString("h:mm") + "pm",
-                new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17}
+                new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17, 5, 6, 7, 8, 10, 18, 19, 20, 21}
             );
         }
 
