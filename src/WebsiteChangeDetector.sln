@@ -5,14 +5,9 @@ VisualStudioVersion = 16.0.31005.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebsiteChangeDetector", "WebsiteChangeDetector\WebsiteChangeDetector.csproj", "{4A782B7E-72CC-4E82-AFC4-C29C840F461A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{06BA63B4-6681-4971-9CB2-A2F653AFBEE8}"
-	ProjectSection(SolutionItems) = preProject
-		WebsiteChangeDetector\bin\Debug\net5.0\balboa_tennis.json = WebsiteChangeDetector\bin\Debug\net5.0\balboa_tennis.json
-	EndProjectSection
-EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "WebsiteChangeDetector.Database", "WebsiteChangeDetector.Database\WebsiteChangeDetector.Database.sqlproj", "{3F37022D-8498-46BA-A7D2-B7BC126B6E72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebsiteChangeDetector.Console", "WebsiteChangeDetector.Console\WebsiteChangeDetector.Console.csproj", "{E0973026-99FC-481C-85FA-B927FCD2D1DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebsiteChangeDetector.Console", "WebsiteChangeDetector.Console\WebsiteChangeDetector.Console.csproj", "{E0973026-99FC-481C-85FA-B927FCD2D1DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
