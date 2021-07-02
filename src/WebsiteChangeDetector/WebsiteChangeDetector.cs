@@ -42,7 +42,8 @@ namespace WebsiteChangeDetector
                 _logger.LogDebug(result.Message);
 
                 // send message
-                await _emailClient.Send(result.Message);
+                if (result.EmailOnSuccess)
+                    await _emailClient.Send(result.Message);
 
                 if (_options.PauseOnSuccess)
                 {

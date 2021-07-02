@@ -139,7 +139,7 @@ namespace WebsiteChangeDetector.Websites
                 if (success)
                 {
                     await _service.AddBlackoutDateAsync(new BlackoutDate(searchDate, true));
-                    return new WebsiteResult(true, $"Booked reservation for {timeMessage}");
+                    return new WebsiteResult(true, false, $"Booked reservation for {timeMessage}");
                 }
 
                 _logger.LogDebug($"Couldn't find time for {timeMessage}");
