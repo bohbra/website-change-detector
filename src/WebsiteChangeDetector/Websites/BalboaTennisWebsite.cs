@@ -241,7 +241,12 @@ namespace WebsiteChangeDetector.Websites
 
             // check for existing bookings
             var allDivs = tableElement.FindElements(By.CssSelector("div"));
-            var bookings = allDivs.Where(x => x.Text == "My Booking");
+            var bookings = new List<IWebElement>();
+            foreach (var div in allDivs)
+            {
+                if (div.Text == "My Booking")
+                    bookings.Add(div);
+            }
             if (bookings.Any())
             {
                 _logger.LogDebug("Skipping, already have a booking for this day");
