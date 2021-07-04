@@ -1,9 +1,8 @@
 ﻿using Google.Apis.Calendar.v3;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using WebsiteChangeDetector.Entities;
 
 namespace WebsiteChangeDetector.Services
