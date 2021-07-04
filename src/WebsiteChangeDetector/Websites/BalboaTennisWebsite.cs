@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using WebsiteChangeDetector.Entities;
 using WebsiteChangeDetector.Extensions;
 using WebsiteChangeDetector.Options;
 using WebsiteChangeDetector.Services;
@@ -19,10 +20,7 @@ namespace WebsiteChangeDetector.Websites
         private readonly IWebDriver _webDriver;
         private readonly IBalboaTennisService _service;
         private readonly WebsiteChangeDetectorOptions _options;
-        private readonly BalboaSearch _searchOptions;
         private bool _loginNeeded = true;
-        private IEnumerable<BlackoutDate> _blackoutDates;
-
         private const string LoginUrl = "https://balboatc.tennisbookings.com/loginx.aspx";
 
         public BalboaTennisWebsite(
@@ -35,14 +33,6 @@ namespace WebsiteChangeDetector.Websites
             _webDriver = webDriver;
             _service = service;
             _options = options.Value;
-
-            // save search options
-            _searchOptions = new BalboaSearch(
-                _options.BalboaTennisGuestName,
-                _options.BalboaTennisStartTime.ToString("h:mm") + "pm",
-                _options.BalboaTennisStartTime.AddMinutes(30).ToString("h:mm") + "pm",
-                new[] {24, 23, 22, 11, 12, 13, 14, 15, 16, 17, 5, 6, 7, 8, 10, 18, 19, 20, 21}
-            );
         }
 
         public async Task<WebsiteResult> Check()
@@ -53,31 +43,6 @@ namespace WebsiteChangeDetector.Websites
                 _logger.LogDebug("Search disabled for blackout hours");
                 _loginNeeded = true;
                 return new WebsiteResult(false);
-            }
-
-            // get blackout dates
-            if (_blackoutDates == null)
-            {
-                _logger.LogDebug("Getting all blackout dates");
-                _blackoutDates = await _service.GetAllBlackoutDatesAsync();
-
-                // sync config blackout dates with persisted ones
-                var persistedBlackoutDates = _blackoutDates.Select(x => x.BlackoutDateTime);
-                var configBlackOutDates = _options.BalboaTennisBlackoutDates;
-                var newBlackOutDates = configBlackOutDates
-                    .Except(persistedBlackoutDates)
-                    .Select(x => new BlackoutDate(x, false))
-                    .ToList();
-
-                // add new blackout dates
-                foreach (var newBlackOutDate in newBlackOutDates)
-                {
-                    _logger.LogDebug($"Adding new blackout date: {newBlackOutDate.BlackoutDateTime:MM/dd/yyyy}");
-                    await _service.AddBlackoutDateAsync(newBlackOutDate);
-                }
-
-                // update blackout dates
-                _blackoutDates = _blackoutDates.Union(newBlackOutDates);
             }
 
             // login if needed
@@ -94,40 +59,31 @@ namespace WebsiteChangeDetector.Websites
             // refresh page to fix any memory leaks
             _webDriver.Navigate().Refresh();
 
-            // get all days based on number of days from now
-            var searchDates = GetDateRange(DateTime.Now.Date, TimeSpan.FromDays(_options.BalboaTennisNumberOfDays)).Where(x => 
-                    x.DayOfWeek != DayOfWeek.Saturday && 
-                    x.DayOfWeek != DayOfWeek.Sunday &&
-                    _blackoutDates.All(item => item.BlackoutDateTime != x));
+            // retrieve all events
+            var allEvents = await _service.GetWantedEvents();
 
             // log all search dates
             _logger.LogDebug("Starting search for these dates:");
-            foreach (var searchDate in searchDates)
+            var tennisEvents = allEvents.ToList();
+            foreach (var tennisEvent in tennisEvents)
             {
-                _logger.LogDebug($" {searchDate:MM/dd/yyyy}");
+                _logger.LogDebug($" {tennisEvent.StartDateTime:MM/dd/yyyy hh:mm:ss tt}");
             }
 
             // check all days
-            foreach (var searchDate in searchDates)
+            foreach (var tennisEvent in tennisEvents)
             {
                 // time message
-                var timeMessage = $"{searchDate:MM/dd/yyyy} @ {_searchOptions.StartTime}";
+                var timeMessage = $"{tennisEvent.StartDateTime:MM/dd/yyyy} @ {tennisEvent.StartTime}";
                 _logger.LogDebug($"Searching for {timeMessage}");
 
-                // can't book a date in the past
-                if (searchDate.Date < DateTime.Now.Date)
-                {
-                    _logger.LogWarning("Can't book date in the past");
-                    continue;
-                }
-
                 // select date for the current month
-                var foundDate = SelectDate(searchDate);
+                var foundDate = SelectDate(tennisEvent.StartDateTime);
                 if (!foundDate)
                     return new WebsiteResult(false);
 
                 // select time
-                var foundTime = await SelectTime();
+                var foundTime = await SelectTime(tennisEvent);
                 if (!foundTime)
                 {
                     _logger.LogDebug($"Couldn't find time for {timeMessage}");
@@ -135,10 +91,10 @@ namespace WebsiteChangeDetector.Websites
                 }
 
                 // book time
-                var success = BookTime(_searchOptions.GuestName);
+                var success = BookTime(_options.BalboaTennisGuestName);
                 if (success)
                 {
-                    await _service.AddBlackoutDateAsync(new BlackoutDate(searchDate, true));
+                    await _service.BookEvent(tennisEvent);
                     return new WebsiteResult(true, false, $"Booked reservation for {timeMessage}");
                 }
 
@@ -231,7 +187,7 @@ namespace WebsiteChangeDetector.Websites
             return true;
         }
 
-        private async Task<bool> SelectTime()
+        private async Task<bool> SelectTime(BalboaTennisEvent tennisEvent)
         {
             // switch to calendar frame
             _webDriver.SwitchTo().Frame("mygridframe");
@@ -253,20 +209,25 @@ namespace WebsiteChangeDetector.Websites
                 return false;
             }
 
+            // create list for wanted courts to manipulate data
+            var wantedCourts = _options.BalboaTennisCourts.ToList();
+
             // available start times
-            var rowTimeStart = tableElement.FindElement(By.CssSelector($"tr[myTag='{_searchOptions.StartTime}']"));
+            var rowTimeStart = tableElement.FindElement(By.CssSelector($"tr[myTag='{tennisEvent.StartTime}']"));
             var openStartTimes = rowTimeStart.FindElements(By.ClassName("f"));
             var openStartTimeSlots = openStartTimes
-                .Select(x => new BalboaTimeSlot(x, CalculateCourtNumber(x)))
-                .Where(x => _searchOptions.Courts.Contains(x.CourtNumber))
+                .Select(x => new BalboaTennisTimeSlot(x, CalculateCourtNumber(x)))
+                .Where(x => wantedCourts.Contains(x.CourtNumber))
+                .OrderBy(x => wantedCourts.IndexOf(x.CourtNumber))
                 .ToList();
 
             // available end times
-            var rowTimeEnd = tableElement.FindElement(By.CssSelector($"tr[myTag='{_searchOptions.EndTime}']"));
+            var rowTimeEnd = tableElement.FindElement(By.CssSelector($"tr[myTag='{tennisEvent.EndTime}']"));
             var openEndTimes = rowTimeEnd.FindElements(By.ClassName("f"));
             var openEndTimeSlots = openEndTimes
-                .Select(x => new BalboaTimeSlot(x, CalculateCourtNumber(x)))
-                .Where(x => _searchOptions.Courts.Contains(x.CourtNumber))
+                .Select(x => new BalboaTennisTimeSlot(x, CalculateCourtNumber(x)))
+                .Where(x => wantedCourts.Contains(x.CourtNumber))
+                .OrderBy(x => wantedCourts.IndexOf(x.CourtNumber))
                 .ToList();
 
             // if there are no openings, stop
@@ -274,16 +235,16 @@ namespace WebsiteChangeDetector.Websites
                 return false;
 
             // find column match
-            foreach (var startTime in openStartTimeSlots)
+            foreach (var startTimeSlot in openStartTimeSlots)
             {
-                if (!startTime.WebElement.Displayed || !startTime.WebElement.Enabled)
+                if (!startTimeSlot.WebElement.Displayed || !startTimeSlot.WebElement.Enabled)
                 {
                     _logger.LogTrace("Can't select time because element is either disabled or not displayed");
                     continue;
                 }
 
                 // r19c7
-                var startId = startTime.WebElement.GetAttribute("id");
+                var startId = startTimeSlot.WebElement.GetAttribute("id");
                 var columnSplit = startId.Split("c");
                 var startRow = Convert.ToInt32(columnSplit.First().Substring(1));
                 var startColumn = columnSplit.Last();
@@ -298,12 +259,12 @@ namespace WebsiteChangeDetector.Websites
 
                 // scroll element into view
                 _logger.LogDebug("Scrolling start time element into view");
-                ((IJavaScriptExecutor)_webDriver).ExecuteScript("arguments[0].scrollIntoView(true);", startTime.WebElement);
+                ((IJavaScriptExecutor)_webDriver).ExecuteScript("arguments[0].scrollIntoView(true);", startTimeSlot.WebElement);
                 await Task.Delay(1000);
 
-                _logger.LogDebug($"Clicking {_searchOptions.StartTime} for court {startTime.CourtNumber}");
-                startTime.WebElement.Click();
-                _logger.LogDebug($"Clicking {_searchOptions.EndTime} for court {startTime.CourtNumber}");
+                _logger.LogDebug($"Clicking {tennisEvent.StartTime} for court {startTimeSlot.CourtNumber}");
+                startTimeSlot.WebElement.Click();
+                _logger.LogDebug($"Clicking {tennisEvent.EndTime} for court {startTimeSlot.CourtNumber}");
                 matchingEndTime.WebElement.Click();
                 return true;
             }
@@ -366,19 +327,5 @@ namespace WebsiteChangeDetector.Websites
             new Actions(_webDriver).SendKeys(Keys.Escape).Perform();
             return true;
         }
-
-        private IEnumerable<DateTime> GetDateRange(DateTime startDate, TimeSpan offset)
-        {
-            var endDate = startDate.Add(offset);
-            while (startDate <= endDate)
-            {
-                yield return startDate.Date;
-                startDate = startDate.AddDays(1);
-            }
-        }
     }
-
-    public record BalboaSearch(string GuestName, string StartTime, string EndTime, IEnumerable<int> Courts);
-
-    public record BalboaTimeSlot(IWebElement WebElement, int CourtNumber);
 }

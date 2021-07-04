@@ -56,6 +56,8 @@ namespace WebsiteChangeDetector.Console
                     services.AddHostedService<Service>();
                     services.AddSingleton<IEmailClient, EmailClient>();
                     services.AddSingleton<IWebsiteChangeDetector, WebsiteChangeDetector>();
+                    services.AddSingleton<IGoogleCalendarService, GoogleCalendarService>();
+                    services.AddSingleton<IBalboaTennisService, BalboaTennisService>();
 
                     // websites
                     switch (options.WebsiteName)
@@ -73,11 +75,6 @@ namespace WebsiteChangeDetector.Console
                             services.AddScoped<IWebsite, ExpenseReportWebsite>();
                             break;
                     }
-
-                    // website services
-                    var connectionString = context.Configuration.GetConnectionString("DefaultConnection");
-                    services.AddScoped<IBalboaTennisService>(_ => new BalboaTennisService(connectionString));
-
                 })
                 .UseSerilog((context, configureLogger) =>
                 {
