@@ -1,6 +1,7 @@
 ﻿using Google.Apis.Calendar.v3;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using WebsiteChangeDetector.Entities;
@@ -39,7 +40,7 @@ namespace WebsiteChangeDetector.Services
             var tennisEvents = new List<BalboaTennisEvent>();
 
             // check for issue with events
-            if (tennisEvents.Count == 0)
+            if (events.Items == null || events.Items.Count == 0)
                 throw new Exception("Couldn't find any available tennis events");
 
             // populate tennis event data
