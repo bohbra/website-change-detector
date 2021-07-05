@@ -6,6 +6,7 @@ using OpenQA.Selenium.Chrome;
 using Serilog;
 using System;
 using System.Threading.Tasks;
+using OpenQA.Selenium.Remote;
 using WebsiteChangeDetector.Console.Logging;
 using WebsiteChangeDetector.Console.Options;
 using WebsiteChangeDetector.Console.Services;
@@ -27,6 +28,7 @@ namespace WebsiteChangeDetector.Console
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration(config =>
                 {
+                    config.AddEnvironmentVariables();
                     config.AddJsonFile("appsettings.overrides.json", true);
                 })
                 .ConfigureServices((context, services) =>
@@ -45,6 +47,22 @@ namespace WebsiteChangeDetector.Console
                         chromeOptions.AddArgument("--window-size=1024,768");
                         chromeOptions.AddArgument("--disable-logging");
                         chromeOptions.AddArgument("--log-level=3");
+                        chromeOptions.AddArgument("--disable-background-timer-throttling");
+                        chromeOptions.AddArgument("--disable-backgrounding-occluded-windows");
+                        chromeOptions.AddArgument("--disable-breakpad");
+                        chromeOptions.AddArgument("--disable-component-extensions-with-background-pages");
+                        chromeOptions.AddArgument("--disable-dev-shm-usage");
+                        chromeOptions.AddArgument("--disable-extensions");
+                        chromeOptions.AddArgument("--disable-features=TranslateUI,BlinkGenPropertyTrees");
+                        chromeOptions.AddArgument("--disable-ipc-flooding-protection");
+                        chromeOptions.AddArgument("--disable-renderer-backgrounding");
+                        chromeOptions.AddArgument("--enable-features=NetworkService,NetworkServiceInProcess");
+                        chromeOptions.AddArgument("--force-color-profile=srgb");
+                        chromeOptions.AddArgument("--hide-scrollbars");
+                        chromeOptions.AddArgument("--metrics-recording-only");
+                        chromeOptions.AddArgument("--mute-audio");
+                        chromeOptions.AddArgument("--no-sandbox");
+
                         if (options.Headless)
                         {
                             chromeOptions.AddArguments("headless");
