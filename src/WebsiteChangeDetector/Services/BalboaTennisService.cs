@@ -10,7 +10,6 @@ namespace WebsiteChangeDetector.Services
     public class BalboaTennisService : IBalboaTennisService
     {
         private const string BalboaTennisCalendarId = "crnpk6qltpq5nca7uo4lrfddbg@group.calendar.google.com";
-        private const string BookedSummary = "🟢 Tennis: Booked";
 
         private readonly ILogger<BalboaTennisService> _logger;
 
@@ -68,14 +67,14 @@ namespace WebsiteChangeDetector.Services
             return tennisEvents;
         }
 
-        public async Task BookEvent(BalboaTennisEvent tennisEvent)
+        public async Task BookEvent(BalboaTennisEvent tennisEvent, int court)
         {
             _logger.LogDebug($"{nameof(BookEvent)} called");
             // retrieve event from api
             var calendarEvent = await _calendarService.Events.Get(BalboaTennisCalendarId, tennisEvent.Id).ExecuteAsync();
 
             // make a change
-            calendarEvent.Summary = BookedSummary;
+            calendarEvent.Summary = $"🟢 Tennis: Booked {court}";
 
             // update the event
             await _calendarService.Events.Update(calendarEvent, BalboaTennisCalendarId, calendarEvent.Id).ExecuteAsync();

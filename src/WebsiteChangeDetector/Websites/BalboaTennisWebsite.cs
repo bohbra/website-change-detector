@@ -83,7 +83,7 @@ namespace WebsiteChangeDetector.Websites
                     return new WebsiteResult(false);
 
                 // select time
-                var foundTime = await SelectTime(tennisEvent);
+                var (foundTime, courtNumber) = await SelectTime(tennisEvent);
                 if (!foundTime)
                 {
                     _logger.LogDebug($"Couldn't find time for {timeMessage}");
@@ -94,8 +94,8 @@ namespace WebsiteChangeDetector.Websites
                 var success = BookTime(_options.BalboaTennisGuestName);
                 if (success)
                 {
-                    await _service.BookEvent(tennisEvent);
-                    return new WebsiteResult(true, false, $"Booked reservation for {timeMessage}");
+                    await _service.BookEvent(tennisEvent, courtNumber);
+                    return new WebsiteResult(true, false, $"Booked reservation for {timeMessage}, Court {courtNumber}");
                 }
 
                 _logger.LogDebug($"Couldn't find time for {timeMessage}");
@@ -187,7 +187,7 @@ namespace WebsiteChangeDetector.Websites
             return true;
         }
 
-        private async Task<bool> SelectTime(BalboaTennisEvent tennisEvent)
+        private async Task<(bool, int)> SelectTime(BalboaTennisEvent tennisEvent)
         {
             // switch to calendar frame
             _webDriver.SwitchTo().Frame("mygridframe");
@@ -206,7 +206,7 @@ namespace WebsiteChangeDetector.Websites
             if (bookings.Any())
             {
                 _logger.LogDebug("Skipping, already have a booking for this day");
-                return false;
+                return (false, 0);
             }
 
             // create list for wanted courts to manipulate data
@@ -232,7 +232,7 @@ namespace WebsiteChangeDetector.Websites
 
             // if there are no openings, stop
             if (!openStartTimeSlots.Any() || !openEndTimeSlots.Any())
-                return false;
+                return (false, 0);
 
             // find column match
             foreach (var startTimeSlot in openStartTimeSlots)
@@ -266,10 +266,10 @@ namespace WebsiteChangeDetector.Websites
                 startTimeSlot.WebElement.Click();
                 _logger.LogDebug($"Clicking {tennisEvent.EndTime} for court {startTimeSlot.CourtNumber}");
                 matchingEndTime.WebElement.Click();
-                return true;
+                return (true, startTimeSlot.CourtNumber);
             }
 
-            return false;
+            return (false, 0);
         }
 
         private int CalculateCourtNumber(IWebElement tdElement)

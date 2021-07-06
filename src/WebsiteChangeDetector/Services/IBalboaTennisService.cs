@@ -7,6 +7,6 @@ namespace WebsiteChangeDetector.Services
     public interface IBalboaTennisService
     {
         Task<IEnumerable<BalboaTennisEvent>> GetWantedEvents();
-        Task BookEvent(BalboaTennisEvent tennisEvent);
+        Task BookEvent(BalboaTennisEvent tennisEvent, int courtNumber);
     }
 }
