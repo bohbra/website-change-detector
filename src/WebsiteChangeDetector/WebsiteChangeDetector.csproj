@@ -12,7 +12,7 @@
     <PackageReference Include="InputSimulatorCore" Version="1.0.5" />
     <PackageReference Include="Selenium.Support" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="91.0.4472.10100" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="92.0.4515.4300" />
     <PackageReference Include="SendGrid" Version="9.24.0" />
   </ItemGroup>
 
